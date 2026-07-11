@@ -1,4 +1,9 @@
 // ============================================
+// ⚙️ CONFIG
+// ============================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbwNJ8E52DLKj10e0kaUDcVASaw2V4uyxsoX9bmfP-ts7jC0lYOlKCyHaBk6SXX537Ukdw/exec';
+
+// ============================================
 // LOAD USER DATA
 // ============================================
 const userData = JSON.parse(localStorage.getItem('friendlyUser') || '{}');
@@ -18,7 +23,7 @@ if (userData.name) {
 // ============================================
 let tokenCount = 3;
 let currentChatTitle = 'New Chat';
-let currentMode = 'ngobrol'; // Default mode
+let currentMode = 'ngobrol';
 const chatArea = document.getElementById('chatArea');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -31,14 +36,10 @@ const historyList = document.getElementById('historyList');
 // MODE SELECTOR
 // ============================================
 function setMode(mode, btn) {
-    // Update active button
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    
-    // Update mode
     currentMode = mode;
     
-    // Update placeholder
     if (mode === 'ngobrol') {
         messageInput.placeholder = 'Ngobrol...';
     } else if (mode === 'ngoding') {
@@ -47,7 +48,6 @@ function setMode(mode, btn) {
         messageInput.placeholder = 'VIP Mode...';
     }
     
-    // Check access
     checkModeAccess();
 }
 
@@ -146,13 +146,12 @@ function updateHeaderTitle() {
 }
 
 // ============================================
-// KIRIM PESAN
+// KIRIM PESAN (DENGAN APPS SCRIPT)
 // ============================================
-function kirimPesan() {
+async function kirimPesan() {
     const message = messageInput.value.trim();
     if (!message) return;
 
-    // Cek mode
     if (currentMode === 'ngoding' && tokenCount <= 0) {
         alert('Token habis! Silakan beli token atau gunakan mode VIP.');
         return;
@@ -161,7 +160,6 @@ function kirimPesan() {
     const welcome = document.getElementById('welcomeScreen');
     if (welcome) welcome.style.display = 'none';
 
-    // Update title dari pesan pertama
     if (currentChatTitle === 'New Chat') {
         currentChatTitle = message.substring(0, 40) + (message.length > 40 ? '...' : '');
         updateHeaderTitle();
@@ -173,17 +171,40 @@ function kirimPesan() {
     autoResize(messageInput);
     sendBtn.disabled = true;
 
-    // Kurangi token jika mode ngoding
-    if (currentMode === 'ngoding') {
-        tokenCount--;
-        updateToken();
+    // Loading indicator
+    const loadingMsg = addMessage('ai', '...');
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'chat',
+                email: userData.email,
+                name: userData.name,
+                message: message,
+                mode: currentMode
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Hapus loading
+        loadingMsg.remove();
+        
+        if (data.status === 'success') {
+            addMessage('ai', data.response);
+            if (currentMode === 'ngoding' || currentMode === 'ngobrol') {
+                tokenCount = data.token;
+                updateToken();
+            }
+        } else {
+            addMessage('ai', '⚠️ ' + (data.message || 'Gagal dapat respons.'));
+        }
+    } catch (error) {
+        loadingMsg.remove();
+        addMessage('ai', '❌ Gagal terhubung ke server. Coba lagi nanti.');
+        console.error('Error:', error);
     }
-
-    // Simulasi AI response
-    setTimeout(() => {
-        const aiResponse = generateResponse(message);
-        addMessage('ai', aiResponse);
-    }, 1500);
 }
 
 // ============================================
@@ -198,7 +219,6 @@ function addHistoryItem(title) {
         this.classList.add('active');
     };
     historyList.insertBefore(item, historyList.firstChild);
-    
     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
     item.classList.add('active');
 }
@@ -229,12 +249,15 @@ function addMessage(type, text) {
     `;
     chatArea.appendChild(msgDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
+    return msgDiv;
 }
 
 // ============================================
 // FORMAT TEXT
 // ============================================
 function formatText(text) {
+    if (text === '...') return '<span style="animation:pulse 1s infinite;">Memikirkan...</span>';
+    
     if (text.includes('```')) {
         const parts = text.split('```');
         return parts.map((part, i) => {
@@ -245,32 +268,6 @@ function formatText(text) {
         }).join('');
     }
     return escapeHtml(text).replace(/\n/g, '<br>');
-}
-
-// ============================================
-// GENERATE RESPONSE
-// ============================================
-function generateResponse(message) {
-    const msg = message.toLowerCase();
-    
-    // Mode Ngobrol - deteksi permintaan kode
-    if (currentMode === 'ngobrol' && (msg.includes('buatkan') || msg.includes('kode') || msg.includes('code') || msg.includes('navbar') || msg.includes('function'))) {
-        return `Sepertinya kamu meminta kode. Silakan pindah ke mode <b>Ngoding</b> untuk generate kode. Klik tombol Ngoding di bawah ya!`;
-    }
-    
-    if (msg.includes('navbar') || msg.includes('responsive')) {
-        return `Berikut contoh navbar responsive:\n\n\`\`\`html\n<nav class="navbar">\n  <div class="logo">Logo</div>\n  <ul class="nav-links">\n    <li><a href="#">Home</a></li>\n    <li><a href="#">About</a></li>\n  </ul>\n  <div class="hamburger">☰</div>\n</nav>\n\`\`\`\n\nGunakan flexbox untuk layout dan media query untuk responsive.`;
-    }
-    if (msg.includes('async') || msg.includes('await')) {
-        return `**Async/Await** adalah cara modern handle asynchronous di JavaScript.\n\n\`\`\`javascript\nasync function getData() {\n  try {\n    const response = await fetch('https://api.example.com');\n    const data = await response.json();\n    return data;\n  } catch (error) {\n    console.error('Error:', error);\n  }\n}\n\`\`\`\n\n\`async\` bikin function return Promise, \`await\` nunggu Promise selesai.`;
-    }
-    if (msg.includes('debug') || msg.includes('error')) {
-        return `Error **TypeError: undefined is not a function** biasanya terjadi karena:\n\n1. Kamu manggil fungsi yang belum didefinisikan\n2. Variabel bernilai \`undefined\`\n3. Salah ketik nama fungsi\n\nCek apakah fungsi sudah dideklarasi SEBELUM dipanggil.`;
-    }
-    if (msg.includes('fetch') || msg.includes('api')) {
-        return `Ini contoh fetch API dengan error handling:\n\n\`\`\`javascript\nasync function fetchData(url) {\n  const response = await fetch(url);\n  if (!response.ok) throw new Error('Network error');\n  return await response.json();\n}\n\`\`\``;
-    }
-    return `Pertanyaan menarik! "${message}" — bisa kamu jelaskan lebih spesifik? Aku siap bantu dengan kode atau penjelasan konsep.`;
 }
 
 function escapeHtml(text) {
@@ -288,3 +285,15 @@ function logout() {
         window.location.href = 'index.html';
     }
 }
+
+// ============================================
+// PULSE ANIMATION
+// ============================================
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+`;
+document.head.appendChild(style);
