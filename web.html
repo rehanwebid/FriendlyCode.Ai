@@ -12,7 +12,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">FC</div>
+            <img id="sidebarLogo" class="sidebar-logo-img" src="logo.webp" alt="Logo">
             <span class="sidebar-title">FriendlyCode</span>
         </div>
         <button class="new-chat-btn" onclick="newChat()">
@@ -20,13 +20,11 @@
             New Chat
         </button>
         <div class="sidebar-history" id="historyList">
-            <div class="history-item active">Belajar HTML dasar</div>
-            <div class="history-item">Buat navbar responsive</div>
-            <div class="history-item">Debug error callback</div>
+            <!-- History akan diisi oleh JS -->
         </div>
         <div class="sidebar-footer">
             <div class="sidebar-user" onclick="logout()">
-                <img id="userPhoto" class="user-avatar-img" src="" alt="Profile" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+                <img id="userPhoto" class="user-avatar-img" src="" alt="Profile">
                 <span class="user-name" id="sidebarUsername">User</span>
                 <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </div>
@@ -38,25 +36,20 @@
         
         <!-- HEADER -->
         <header class="header">
-            <div class="header-model">
-                <span class="model-dot"></span>
-                Gemini AI · Ready
+            <div class="header-left">
+                <img id="headerLogo" class="header-logo-img" src="https://via.placeholder.com/28" alt="Logo">
+                <span class="header-title" id="headerTitle">New Chat</span>
             </div>
-            <div class="token-badge">
-                <svg class="token-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                <div>
-                    <div class="token-count" id="tokenCount">5</div>
-                    <div class="token-label">tokens left</div>
-                </div>
+            <div class="token-badge" id="tokenBadge">
+                <span class="token-count" id="tokenCount">5</span>
+                <span class="token-label">Tokens left</span>
             </div>
         </header>
 
         <!-- CHAT AREA -->
         <div class="chat-area" id="chatArea">
+            <!-- Welcome -->
             <div class="welcome" id="welcomeScreen">
-                <div class="welcome-icon">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10h-10V2z"/></svg>
-                </div>
                 <h2>Halo! Ada yang bisa dibantu?</h2>
                 <p>Tanya seputar coding, debugging, atau konsep programming.</p>
                 <div class="suggestions">
