@@ -54,7 +54,7 @@ function googleSignIn() {
 }
 
 // ============================================
-// CHECK LOGIN STATUS (TANPA AUTO-REDIRECT)
+// CHECK LOGIN STATUS
 // ============================================
 window.addEventListener('load', () => {
     if (window.onAuthStateChanged && window.auth) {
@@ -83,13 +83,36 @@ window.addEventListener('load', () => {
     }
 });
 
-// Navbar scroll
+// ============================================
+// SCROLL ANIMATION - FEATURES
+// ============================================
+const featureVisuals = document.querySelectorAll('.feature-visual');
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+        } else {
+            entry.target.classList.remove('in-view');
+        }
+    });
+}, {
+    threshold: 0.3
+});
+
+featureVisuals.forEach(box => observer.observe(box));
+
+// ============================================
+// NAVBAR SCROLL
+// ============================================
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('navbar');
     if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
 });
 
-// Smooth scroll
+// ============================================
+// SMOOTH SCROLL
+// ============================================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
@@ -98,12 +121,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// FAQ accordion
+// ============================================
+// FAQ ACCORDION
+// ============================================
 document.querySelectorAll('.faq-item').forEach(item => {
     item.addEventListener('click', function() { this.classList.toggle('open'); });
 });
 
-// Buy now
+// ============================================
+// BUY NOW
+// ============================================
 function buyNow(plan) {
     const plans = {
         pro: { name: 'Pro', price: 'Rp 30.000', tokens: '15 Token' },
