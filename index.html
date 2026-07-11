@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FriendlyCode.Ai — Asisten Coding AI untuk Developer Indonesia</title>
-    <meta name="description" content="FriendlyCode.Ai adalah asisten coding AI powered by Google Gemini. Tanya, debug, dan belajar coding dengan AI. Gratis 5 token untuk memulai.">
+    <meta name="description" content="FriendlyCode.Ai adalah asisten coding AI powered by Google Gemini. Tanya, debug, dan belajar coding dengan AI. Gratis 3 token untuk memulai.">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
@@ -180,22 +180,48 @@
     <!-- PRICING -->
     <section id="pricing">
         <div class="container">
-            <div class="section-label">Pricing</div><h2 class="section-title">Simple, Transparent</h2><p class="section-desc">Mulai gratis. Upgrade kapan saja saat kamu butuh lebih banyak token.</p>
+            <div class="section-label">Pricing</div>
+            <h2 class="section-title">Simple, Transparent</h2>
+            <p class="section-desc">Mulai gratis. Upgrade kapan saja saat kamu butuh lebih.</p>
             <div class="pricing-grid">
+                <!-- STARTER -->
                 <div class="pricing-card">
-                    <div class="pricing-name">Starter</div><div class="pricing-price">Free</div><div class="pricing-desc">5 tokens · Selamanya</div>
-                    <ul class="pricing-features"><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> AI Chat dengan Gemini</li><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Google Login</li><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Chat History</li></ul>
+                    <div class="pricing-name">Starter</div>
+                    <div class="pricing-price">Free</div>
+                    <div class="pricing-desc">3 tokens · Selamanya</div>
+                    <ul class="pricing-features">
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Mode Ngobrol (Gratis)</li>
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 3 Token Ngoding</li>
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Google Login</li>
+                    </ul>
                     <button class="pricing-btn outline" onclick="googleSignIn()">Get Started</button>
                 </div>
+                
+                <!-- PRO -->
                 <div class="pricing-card featured">
-                    <div class="pricing-badge">Most Popular</div><div class="pricing-name">Pro</div><div class="pricing-price">Rp 5K</div><div class="pricing-desc">10 tokens</div>
-                    <ul class="pricing-features"><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Semua fitur Starter</li><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Priority Support</li><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Export Code</li></ul>
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-name">Pro</div>
+                    <div class="pricing-price">Rp 30K</div>
+                    <div class="pricing-desc">15 tokens</div>
+                    <ul class="pricing-features">
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Semua fitur Starter</li>
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 15 Token Ngoding</li>
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Export Code</li>
+                    </ul>
                     <button class="pricing-btn primary" onclick="buyNow('pro')">Buy Pro</button>
                 </div>
+                
+                <!-- VIP -->
                 <div class="pricing-card">
-                    <div class="pricing-name">Enterprise</div><div class="pricing-price">Rp 10K</div><div class="pricing-desc">25 tokens</div>
-                    <ul class="pricing-features"><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Semua fitur Pro</li><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited History</li><li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 24/7 Support</li></ul>
-                    <button class="pricing-btn outline" onclick="buyNow('enterprise')">Buy Enterprise</button>
+                    <div class="pricing-name">VIP</div>
+                    <div class="pricing-price">Rp 50K</div>
+                    <div class="pricing-desc">30 hari · Unlimited</div>
+                    <ul class="pricing-features">
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Semua fitur Pro</li>
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited Token</li>
+                        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Mode VIP 30 Hari</li>
+                    </ul>
+                    <button class="pricing-btn outline" onclick="buyNow('vip')">Buy VIP</button>
                 </div>
             </div>
         </div>
@@ -207,10 +233,9 @@
             <div class="section-label">FAQ</div><h2 class="section-title">Got Questions?</h2><p class="section-desc">Hal-hal yang sering ditanyakan seputar FriendlyCode.</p>
             <div class="faq-list" id="faqList">
                 <div class="faq-item"><div class="faq-question">Apa itu FriendlyCode.Ai? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">FriendlyCode.Ai adalah asisten coding berbasis AI yang menggunakan Google Gemini untuk membantu kamu menulis, debug, dan belajar kode dalam Bahasa Indonesia.</div></div>
-                <div class="faq-item"><div class="faq-question">Bagaimana token gratis? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">User baru dapat 5 token gratis setelah login. Token digunakan per pertanyaan ke AI. Beli token tambahan jika habis.</div></div>
+                <div class="faq-item"><div class="faq-question">Apa beda mode Ngobrol, Ngoding, dan VIP? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">Ngobrol gratis untuk tanya jawab biasa. Ngoding butuh 1 token per prompt. VIP bebas semua tanpa batas selama 30 hari.</div></div>
                 <div class="faq-item"><div class="faq-question">Apakah data aman? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">Ya! Kami menggunakan Google Login terenkripsi. Data chat-mu hanya bisa diakses oleh kamu sendiri.</div></div>
-                <div class="faq-item"><div class="faq-question">Bahasa apa saja? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">Semua bahasa populer: HTML, CSS, JS, Python, Java, PHP, C++, React, Vue, Node.js, SQL, dan banyak lagi.</div></div>
-                <div class="faq-item"><div class="faq-question">Cara beli token? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">Klik "Buy" di Pricing. Kamu akan diarahkan ke WhatsApp admin untuk konfirmasi. Token bertambah setelah dikonfirmasi.</div></div>
+                <div class="faq-item"><div class="faq-question">Bahasa apa saja yang didukung? <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="faq-answer">Semua bahasa populer: HTML, CSS, JS, Python, Java, PHP, C++, React, Vue, Node.js, SQL, dan banyak lagi.</div></div>
             </div>
         </div>
     </section>
