@@ -12,7 +12,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img id="sidebarLogo" class="sidebar-logo-img" src="logo.webp" alt="Logo">
+            <img src="logo.html" alt="Logo" class="sidebar-logo-img">
             <span class="sidebar-title">FriendlyCode</span>
         </div>
         <button class="new-chat-btn" onclick="newChat()">
@@ -20,7 +20,6 @@
             New Chat
         </button>
         <div class="sidebar-history" id="historyList">
-            <!-- History akan diisi oleh JS -->
         </div>
         <div class="sidebar-footer">
             <div class="sidebar-user" onclick="logout()">
@@ -37,18 +36,19 @@
         <!-- HEADER -->
         <header class="header">
             <div class="header-left">
-                <img id="headerLogo" class="header-logo-img" src="https://via.placeholder.com/28" alt="Logo">
-                <span class="header-title" id="headerTitle">New Chat</span>
+                <img src="https://via.placeholder.com/28" alt="Logo" class="header-logo">
+                <span class="header-brand">FriendlyCode</span>
             </div>
-            <div class="token-badge" id="tokenBadge">
-                <span class="token-count" id="tokenCount">5</span>
-                <span class="token-label">Tokens left</span>
+            <div class="header-center" id="headerTitle">New Chat</div>
+            <div class="header-right">
+                <span class="token-badge" id="tokenBadge">
+                    <span class="token-count" id="tokenCount">5</span> Tokens left
+                </span>
             </div>
         </header>
 
         <!-- CHAT AREA -->
         <div class="chat-area" id="chatArea">
-            <!-- Welcome -->
             <div class="welcome" id="welcomeScreen">
                 <h2>Halo! Ada yang bisa dibantu?</h2>
                 <p>Tanya seputar coding, debugging, atau konsep programming.</p>
