@@ -16,9 +16,9 @@ if (userData.name) {
 // ============================================
 // CONFIG
 // ============================================
-let tokenCount = 5;
+let tokenCount = 3;
 let currentChatTitle = 'New Chat';
-let chatHistory = [];
+let currentMode = 'ngobrol'; // Default mode
 const chatArea = document.getElementById('chatArea');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -26,6 +26,45 @@ const tokenDisplay = document.getElementById('tokenCount');
 const headerTitle = document.getElementById('headerTitle');
 const welcomeScreen = document.getElementById('welcomeScreen');
 const historyList = document.getElementById('historyList');
+
+// ============================================
+// MODE SELECTOR
+// ============================================
+function setMode(mode, btn) {
+    // Update active button
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Update mode
+    currentMode = mode;
+    
+    // Update placeholder
+    if (mode === 'ngobrol') {
+        messageInput.placeholder = 'Ngobrol...';
+    } else if (mode === 'ngoding') {
+        messageInput.placeholder = 'Minta kode... (1 token)';
+    } else if (mode === 'vip') {
+        messageInput.placeholder = 'VIP Mode...';
+    }
+    
+    // Check access
+    checkModeAccess();
+}
+
+function checkModeAccess() {
+    if (currentMode === 'vip') {
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        messageInput.placeholder = 'VIP Mode...';
+    } else if (currentMode === 'ngoding' && tokenCount <= 0) {
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        messageInput.placeholder = 'Token habis. Beli token untuk lanjut.';
+    } else {
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+    }
+}
 
 // ============================================
 // AUTO RESIZE TEXTAREA
@@ -75,12 +114,13 @@ function newChat() {
     `;
     chatArea.appendChild(welcomeDiv);
     
-    tokenCount = 5;
+    tokenCount = 3;
     currentChatTitle = 'New Chat';
     updateToken();
     updateHeaderTitle();
     messageInput.disabled = false;
-    messageInput.placeholder = 'Tanya coding...';
+    messageInput.placeholder = 'Ngobrol...';
+    setMode('ngobrol', document.querySelector('.mode-btn[data-mode="ngobrol"]'));
 }
 
 // ============================================
@@ -92,9 +132,7 @@ function updateToken() {
     
     if (tokenCount <= 0) {
         countEl.classList.add('empty');
-        sendBtn.disabled = true;
-        messageInput.disabled = true;
-        messageInput.placeholder = 'Token habis. Beli token untuk lanjut.';
+        checkModeAccess();
     } else {
         countEl.classList.remove('empty');
     }
@@ -112,7 +150,13 @@ function updateHeaderTitle() {
 // ============================================
 function kirimPesan() {
     const message = messageInput.value.trim();
-    if (!message || tokenCount <= 0) return;
+    if (!message) return;
+
+    // Cek mode
+    if (currentMode === 'ngoding' && tokenCount <= 0) {
+        alert('Token habis! Silakan beli token atau gunakan mode VIP.');
+        return;
+    }
 
     const welcome = document.getElementById('welcomeScreen');
     if (welcome) welcome.style.display = 'none';
@@ -128,9 +172,14 @@ function kirimPesan() {
     messageInput.value = '';
     autoResize(messageInput);
     sendBtn.disabled = true;
-    tokenCount--;
-    updateToken();
 
+    // Kurangi token jika mode ngoding
+    if (currentMode === 'ngoding') {
+        tokenCount--;
+        updateToken();
+    }
+
+    // Simulasi AI response
     setTimeout(() => {
         const aiResponse = generateResponse(message);
         addMessage('ai', aiResponse);
@@ -150,7 +199,6 @@ function addHistoryItem(title) {
     };
     historyList.insertBefore(item, historyList.firstChild);
     
-    // Update active state
     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
     item.classList.add('active');
 }
@@ -204,6 +252,12 @@ function formatText(text) {
 // ============================================
 function generateResponse(message) {
     const msg = message.toLowerCase();
+    
+    // Mode Ngobrol - deteksi permintaan kode
+    if (currentMode === 'ngobrol' && (msg.includes('buatkan') || msg.includes('kode') || msg.includes('code') || msg.includes('navbar') || msg.includes('function'))) {
+        return `Sepertinya kamu meminta kode. Silakan pindah ke mode <b>Ngoding</b> untuk generate kode. Klik tombol Ngoding di bawah ya!`;
+    }
+    
     if (msg.includes('navbar') || msg.includes('responsive')) {
         return `Berikut contoh navbar responsive:\n\n\`\`\`html\n<nav class="navbar">\n  <div class="logo">Logo</div>\n  <ul class="nav-links">\n    <li><a href="#">Home</a></li>\n    <li><a href="#">About</a></li>\n  </ul>\n  <div class="hamburger">☰</div>\n</nav>\n\`\`\`\n\nGunakan flexbox untuk layout dan media query untuk responsive.`;
     }
