@@ -3,40 +3,29 @@
 // ============================================
 const userData = JSON.parse(localStorage.getItem('friendlyUser') || '{}');
 
-if (!userData.name) {
+if (userData.name) {
+    document.getElementById('sidebarUsername').textContent = userData.name;
+    const userPhoto = document.getElementById('userPhoto');
+    if (userData.photo) {
+        userPhoto.src = userData.photo;
+    }
+} else {
     window.location.href = 'index.html';
 }
 
-// Set user info
-document.getElementById('sidebarUsername').textContent = userData.name || 'User';
-document.getElementById('userPhoto').src = userData.photo || '';
-
-// Set logo (sama untuk sidebar & header)
-const logoUrl = 'https://via.placeholder.com/32'; // Ganti dengan URL logo asli
-document.getElementById('sidebarLogo').src = logoUrl;
-document.getElementById('headerLogo').src = logoUrl;
-
 // ============================================
-// CHAT DATA
+// CONFIG
 // ============================================
 let tokenCount = 5;
-let currentChatId = Date.now();
-let chatHistory = {}; // { chatId: { title: '', messages: [] } }
-let currentMessages = [];
-
+let currentChatTitle = 'New Chat';
+let chatHistory = [];
 const chatArea = document.getElementById('chatArea');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
-const tokenCountEl = document.getElementById('tokenCount');
+const tokenDisplay = document.getElementById('tokenCount');
 const headerTitle = document.getElementById('headerTitle');
-const historyList = document.getElementById('historyList');
 const welcomeScreen = document.getElementById('welcomeScreen');
-
-// ============================================
-// INIT
-// ============================================
-updateTokenDisplay();
-renderHistory();
+const historyList = document.getElementById('historyList');
 
 // ============================================
 // AUTO RESIZE TEXTAREA
@@ -70,17 +59,6 @@ function askSuggestion(text) {
 // NEW CHAT
 // ============================================
 function newChat() {
-    // Save current chat if has messages
-    if (currentMessages.length > 0) {
-        chatHistory[currentChatId] = {
-            title: currentMessages[0]?.content?.substring(0, 30) || 'New Chat',
-            messages: [...currentMessages]
-        };
-    }
-
-    currentChatId = Date.now();
-    currentMessages = [];
-    
     chatArea.innerHTML = '';
     const welcomeDiv = document.createElement('div');
     welcomeDiv.className = 'welcome';
@@ -97,104 +75,36 @@ function newChat() {
     `;
     chatArea.appendChild(welcomeDiv);
     
-    headerTitle.textContent = 'New Chat';
     tokenCount = 5;
-    updateTokenDisplay();
+    currentChatTitle = 'New Chat';
+    updateToken();
+    updateHeaderTitle();
     messageInput.disabled = false;
     messageInput.placeholder = 'Tanya coding...';
-    renderHistory();
 }
 
 // ============================================
-// LOAD CHAT
+// UPDATE TOKEN
 // ============================================
-function loadChat(chatId) {
-    // Save current chat
-    if (currentMessages.length > 0) {
-        chatHistory[currentChatId] = {
-            title: currentMessages[0]?.content?.substring(0, 30) || 'New Chat',
-            messages: [...currentMessages]
-        };
-    }
-
-    currentChatId = chatId;
-    currentMessages = [...chatHistory[chatId].messages];
+function updateToken() {
+    const countEl = document.getElementById('tokenCount');
+    countEl.textContent = tokenCount;
     
-    chatArea.innerHTML = '';
-    currentMessages.forEach(msg => {
-        addMessageToUI(msg.type, msg.content, false);
-    });
-    
-    headerTitle.textContent = chatHistory[chatId].title;
-    
-    // Update active state
-    document.querySelectorAll('.history-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.chatId == chatId);
-    });
-}
-
-// ============================================
-// DELETE CHAT
-// ============================================
-function deleteChat(chatId, event) {
-    event.stopPropagation();
-    if (confirm('Hapus chat ini?')) {
-        delete chatHistory[chatId];
-        if (currentChatId == chatId) {
-            newChat();
-        }
-        renderHistory();
-    }
-}
-
-// ============================================
-// RENDER HISTORY
-// ============================================
-function renderHistory() {
-    historyList.innerHTML = '';
-    
-    // Current active chat
-    if (currentMessages.length > 0 && !chatHistory[currentChatId]) {
-        const item = document.createElement('div');
-        item.className = 'history-item active';
-        item.dataset.chatId = currentChatId;
-        item.innerHTML = `
-            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;">${headerTitle.textContent}</span>
-            <span class="history-delete" onclick="deleteChat('${currentChatId}', event)">×</span>
-        `;
-        item.onclick = () => loadChat(currentChatId);
-        historyList.appendChild(item);
-    }
-    
-    // Saved chats
-    Object.keys(chatHistory).forEach(chatId => {
-        const chat = chatHistory[chatId];
-        const item = document.createElement('div');
-        item.className = 'history-item';
-        item.dataset.chatId = chatId;
-        if (chatId == currentChatId) item.classList.add('active');
-        item.innerHTML = `
-            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;">${chat.title}</span>
-            <span class="history-delete" onclick="deleteChat('${chatId}', event)">×</span>
-        `;
-        item.onclick = () => loadChat(chatId);
-        historyList.appendChild(item);
-    });
-}
-
-// ============================================
-// UPDATE TOKEN DISPLAY
-// ============================================
-function updateTokenDisplay() {
-    tokenCountEl.textContent = tokenCount;
-    if (tokenCount > 0) {
-        tokenCountEl.className = 'token-count active';
-    } else {
-        tokenCountEl.className = 'token-count zero';
+    if (tokenCount <= 0) {
+        countEl.classList.add('empty');
         sendBtn.disabled = true;
         messageInput.disabled = true;
         messageInput.placeholder = 'Token habis. Beli token untuk lanjut.';
+    } else {
+        countEl.classList.remove('empty');
     }
+}
+
+// ============================================
+// UPDATE HEADER TITLE
+// ============================================
+function updateHeaderTitle() {
+    headerTitle.textContent = currentChatTitle;
 }
 
 // ============================================
@@ -205,52 +115,61 @@ function kirimPesan() {
     if (!message || tokenCount <= 0) return;
 
     const welcome = document.getElementById('welcomeScreen');
-    if (welcome) welcome.remove();
+    if (welcome) welcome.style.display = 'none';
 
-    // Add user message
-    addMessageToUI('user', message, true);
-    currentMessages.push({ type: 'user', content: message });
-    
-    // Update title if first message
-    if (currentMessages.length === 1) {
-        headerTitle.textContent = message.substring(0, 30);
-        renderHistory();
+    // Update title dari pesan pertama
+    if (currentChatTitle === 'New Chat') {
+        currentChatTitle = message.substring(0, 40) + (message.length > 40 ? '...' : '');
+        updateHeaderTitle();
+        addHistoryItem(currentChatTitle);
     }
-    
+
+    addMessage('user', message);
     messageInput.value = '';
     autoResize(messageInput);
     sendBtn.disabled = true;
-    
-    // Decrease token
     tokenCount--;
-    updateTokenDisplay();
-    renderHistory();
+    updateToken();
 
-    // Simulate AI response
     setTimeout(() => {
         const aiResponse = generateResponse(message);
-        addMessageToUI('ai', aiResponse, true);
-        currentMessages.push({ type: 'ai', content: aiResponse });
+        addMessage('ai', aiResponse);
     }, 1500);
 }
 
 // ============================================
-// ADD MESSAGE TO UI
+// ADD HISTORY ITEM
 // ============================================
-function addMessageToUI(type, text, animate) {
+function addHistoryItem(title) {
+    const item = document.createElement('div');
+    item.className = 'history-item active';
+    item.textContent = title;
+    item.onclick = function() {
+        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+        this.classList.add('active');
+    };
+    historyList.insertBefore(item, historyList.firstChild);
+    
+    // Update active state
+    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+    item.classList.add('active');
+}
+
+// ============================================
+// ADD MESSAGE
+// ============================================
+function addMessage(type, text) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${type}`;
-    if (!animate) msgDiv.style.animation = 'none';
     
     let avatarHTML = '';
     if (type === 'ai') {
         avatarHTML = '<div class="message-avatar">AI</div>';
     } else {
-        const photo = userData.photo || '';
-        if (photo) {
-            avatarHTML = `<div class="message-avatar"><img src="${photo}" alt="User"></div>`;
+        if (userData.photo) {
+            avatarHTML = `<div class="message-avatar"><img src="${userData.photo}" alt="Profile"></div>`;
         } else {
-            avatarHTML = `<div class="message-avatar">${(userData.name || 'U').charAt(0).toUpperCase()}</div>`;
+            avatarHTML = `<div class="message-avatar">${userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}</div>`;
         }
     }
     
@@ -260,22 +179,6 @@ function addMessageToUI(type, text, animate) {
             <div class="message-text">${formatText(text)}</div>
         </div>
     `;
-    
-    // Add copy buttons
-    msgDiv.querySelectorAll('.message-code').forEach(codeBlock => {
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn';
-        copyBtn.textContent = 'Copy';
-        copyBtn.onclick = function() {
-            const code = codeBlock.textContent.replace('Copy', '').trim();
-            navigator.clipboard.writeText(code).then(() => {
-                copyBtn.textContent = 'Copied!';
-                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
-            });
-        };
-        codeBlock.appendChild(copyBtn);
-    });
-    
     chatArea.appendChild(msgDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -297,7 +200,7 @@ function formatText(text) {
 }
 
 // ============================================
-// GENERATE RESPONSE (SIMULASI - NANTI GANTI GEMINI)
+// GENERATE RESPONSE
 // ============================================
 function generateResponse(message) {
     const msg = message.toLowerCase();
@@ -326,6 +229,8 @@ function escapeHtml(text) {
 // LOGOUT
 // ============================================
 function logout() {
-    localStorage.removeItem('friendlyUser');
-    window.location.href = 'index.html';
+    if (confirm('Yakin ingin keluar?')) {
+        localStorage.removeItem('friendlyUser');
+        window.location.href = 'index.html';
+    }
 }
