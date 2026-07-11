@@ -60,29 +60,22 @@ window.addEventListener('load', () => {
     if (window.onAuthStateChanged && window.auth) {
         window.onAuthStateChanged(window.auth, (user) => {
             if (user) {
-                // User sudah login, update data di localStorage
                 localStorage.setItem('friendlyUser', JSON.stringify({
                     name: user.displayName,
                     email: user.email,
                     photo: user.photoURL
                 }));
                 
-                // Ubah tombol Sign In jadi "Go to App"
                 const signInBtn = document.querySelector('.nav-cta');
                 if (signInBtn) {
                     signInBtn.textContent = 'Go to App';
-                    signInBtn.onclick = function() {
-                        window.location.href = 'web.html';
-                    };
+                    signInBtn.onclick = function() { window.location.href = 'web.html'; };
                 }
                 
-                // Ubah semua tombol CTA
                 document.querySelectorAll('.btn-primary').forEach(btn => {
                     if (btn.textContent.includes('Start Building')) {
                         btn.textContent = 'Go to App';
-                        btn.onclick = function() {
-                            window.location.href = 'web.html';
-                        };
+                        btn.onclick = function() { window.location.href = 'web.html'; };
                     }
                 });
             }
@@ -90,19 +83,13 @@ window.addEventListener('load', () => {
     }
 });
 
-// ============================================
-// NAVBAR SCROLL
-// ============================================
+// Navbar scroll
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('navbar');
-    if (navbar) {
-        navbar.classList.toggle('scrolled', window.scrollY > 50);
-    }
+    if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
 });
 
-// ============================================
-// SMOOTH SCROLL
-// ============================================
+// Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
@@ -111,22 +98,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// ============================================
-// FAQ ACCORDION
-// ============================================
+// FAQ accordion
 document.querySelectorAll('.faq-item').forEach(item => {
-    item.addEventListener('click', function() {
-        this.classList.toggle('open');
-    });
+    item.addEventListener('click', function() { this.classList.toggle('open'); });
 });
 
-// ============================================
-// BUY NOW
-// ============================================
+// Buy now
 function buyNow(plan) {
     const plans = {
-        pro: { name: 'Pro', price: 'Rp 5.000', tokens: '10 Token' },
-        enterprise: { name: 'Enterprise', price: 'Rp 10.000', tokens: '25 Token' }
+        pro: { name: 'Pro', price: 'Rp 30.000', tokens: '15 Token' },
+        vip: { name: 'VIP', price: 'Rp 50.000', tokens: '30 Hari Unlimited' }
     };
     const p = plans[plan];
     const msg = `Halo admin FriendlyCode, saya ingin membeli paket ${p.name} (${p.tokens}) seharga ${p.price}. Mohon info pembayarannya.`;
