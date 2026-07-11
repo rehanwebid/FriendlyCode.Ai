@@ -54,29 +54,55 @@ function googleSignIn() {
 }
 
 // ============================================
-// AUTO REDIRECT IF LOGGED IN
+// CHECK LOGIN STATUS (TANPA AUTO-REDIRECT)
 // ============================================
 window.addEventListener('load', () => {
     if (window.onAuthStateChanged && window.auth) {
         window.onAuthStateChanged(window.auth, (user) => {
-            if (user && window.location.pathname.includes('index.html')) {
+            if (user) {
+                // User sudah login, update data di localStorage
                 localStorage.setItem('friendlyUser', JSON.stringify({
                     name: user.displayName,
                     email: user.email,
                     photo: user.photoURL
                 }));
-                window.location.href = 'web.html';
+                
+                // Ubah tombol Sign In jadi "Go to App"
+                const signInBtn = document.querySelector('.nav-cta');
+                if (signInBtn) {
+                    signInBtn.textContent = 'Go to App';
+                    signInBtn.onclick = function() {
+                        window.location.href = 'web.html';
+                    };
+                }
+                
+                // Ubah semua tombol CTA
+                document.querySelectorAll('.btn-primary').forEach(btn => {
+                    if (btn.textContent.includes('Start Building')) {
+                        btn.textContent = 'Go to App';
+                        btn.onclick = function() {
+                            window.location.href = 'web.html';
+                        };
+                    }
+                });
             }
         });
     }
 });
 
-// Navbar scroll
+// ============================================
+// NAVBAR SCROLL
+// ============================================
 window.addEventListener('scroll', () => {
-    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+        navbar.classList.toggle('scrolled', window.scrollY > 50);
+    }
 });
 
-// Smooth scroll
+// ============================================
+// SMOOTH SCROLL
+// ============================================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
@@ -85,14 +111,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// FAQ accordion
+// ============================================
+// FAQ ACCORDION
+// ============================================
 document.querySelectorAll('.faq-item').forEach(item => {
     item.addEventListener('click', function() {
         this.classList.toggle('open');
     });
 });
 
-// Buy now
+// ============================================
+// BUY NOW
+// ============================================
 function buyNow(plan) {
     const plans = {
         pro: { name: 'Pro', price: 'Rp 5.000', tokens: '10 Token' },
