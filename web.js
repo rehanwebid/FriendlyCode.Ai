@@ -22,15 +22,59 @@ if (userData.name) {
 // CONFIG
 // ============================================
 let tokenCount = 3;
+let userStatus = 'active';
+let currentChatId = 'new';
 let currentChatTitle = 'New Chat';
 let currentMode = 'ngobrol';
+
 const chatArea = document.getElementById('chatArea');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const tokenDisplay = document.getElementById('tokenCount');
 const headerTitle = document.getElementById('headerTitle');
-const welcomeScreen = document.getElementById('welcomeScreen');
 const historyList = document.getElementById('historyList');
+
+// ============================================
+// LOAD TOKEN FROM SERVER
+// ============================================
+async function loadToken() {
+    try {
+        const response = await fetch(API_URL + '?action=getToken&email=' + userData.email);
+        const data = await response.json();
+        if (data.status === 'success') {
+            tokenCount = data.token;
+            userStatus = data.userStatus || 'active';
+            updateToken();
+            
+            // Enable/disable VIP button
+            const vipBtn = document.querySelector('.mode-btn[data-mode="vip"]');
+            if (vipBtn && userStatus !== 'vip') {
+                vipBtn.style.opacity = '0.4';
+            }
+        }
+    } catch (error) {
+        console.error('Gagal load token:', error);
+    }
+}
+
+// ============================================
+// LOAD HISTORY FROM SERVER
+// ============================================
+async function loadHistory() {
+    try {
+        const response = await fetch(API_URL + '?action=getHistory&email=' + userData.email);
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.history) {
+            historyList.innerHTML = '';
+            Object.values(data.history).forEach(chat => {
+                addHistoryItem(chat.title, chat.chatId);
+            });
+        }
+    } catch (error) {
+        console.error('Gagal load history:', error);
+    }
+}
 
 // ============================================
 // MODE SELECTOR
@@ -45,6 +89,10 @@ function setMode(mode, btn) {
     } else if (mode === 'ngoding') {
         messageInput.placeholder = 'Minta kode... (1 token)';
     } else if (mode === 'vip') {
+        if (userStatus !== 'vip') {
+            alert('Fitur VIP hanya untuk member! Upgrade ke paket VIP ya.');
+            return;
+        }
         messageInput.placeholder = 'VIP Mode...';
     }
     
@@ -52,10 +100,10 @@ function setMode(mode, btn) {
 }
 
 function checkModeAccess() {
-    if (currentMode === 'vip') {
-        messageInput.disabled = false;
-        sendBtn.disabled = false;
-        messageInput.placeholder = 'VIP Mode...';
+    if (currentMode === 'vip' && userStatus !== 'vip') {
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        messageInput.placeholder = 'Upgrade ke VIP...';
     } else if (currentMode === 'ngoding' && tokenCount <= 0) {
         messageInput.disabled = true;
         sendBtn.disabled = true;
@@ -114,13 +162,34 @@ function newChat() {
     `;
     chatArea.appendChild(welcomeDiv);
     
-    tokenCount = 3;
+    currentChatId = 'chat_' + Date.now();
     currentChatTitle = 'New Chat';
-    updateToken();
     updateHeaderTitle();
     messageInput.disabled = false;
     messageInput.placeholder = 'Ngobrol...';
     setMode('ngobrol', document.querySelector('.mode-btn[data-mode="ngobrol"]'));
+    checkModeAccess();
+}
+
+// ============================================
+// LOAD CHAT HISTORY
+// ============================================
+function loadChat(chatId, title) {
+    currentChatId = chatId;
+    currentChatTitle = title;
+    updateHeaderTitle();
+    
+    fetch(API_URL + '?action=getHistory&email=' + userData.email)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success' && data.history[chatId]) {
+                chatArea.innerHTML = '';
+                data.history[chatId].messages.forEach(msg => {
+                    addMessage('user', msg.user_message);
+                    addMessage('ai', msg.ai_response);
+                });
+            }
+        });
 }
 
 // ============================================
@@ -146,7 +215,7 @@ function updateHeaderTitle() {
 }
 
 // ============================================
-// KIRIM PESAN (DENGAN APPS SCRIPT)
+// KIRIM PESAN
 // ============================================
 async function kirimPesan() {
     const message = messageInput.value.trim();
@@ -163,7 +232,7 @@ async function kirimPesan() {
     if (currentChatTitle === 'New Chat') {
         currentChatTitle = message.substring(0, 40) + (message.length > 40 ? '...' : '');
         updateHeaderTitle();
-        addHistoryItem(currentChatTitle);
+        addHistoryItem(currentChatTitle, currentChatId);
     }
 
     addMessage('user', message);
@@ -171,7 +240,6 @@ async function kirimPesan() {
     autoResize(messageInput);
     sendBtn.disabled = true;
 
-    // Loading indicator
     const loadingMsg = addMessage('ai', '...');
     
     try {
@@ -182,45 +250,40 @@ async function kirimPesan() {
                 email: userData.email,
                 name: userData.name,
                 message: message,
-                mode: currentMode
+                mode: currentMode,
+                chatId: currentChatId
             })
         });
         
         const data = await response.json();
-        
-        // Hapus loading
         loadingMsg.remove();
         
         if (data.status === 'success') {
             addMessage('ai', data.response);
-            if (currentMode === 'ngoding' || currentMode === 'ngobrol') {
-                tokenCount = data.token;
-                updateToken();
-            }
+            tokenCount = data.token;
+            updateToken();
         } else {
-            addMessage('ai', '⚠️ ' + (data.message || 'Gagal dapat respons.'));
+            addMessage('ai', '⚠️ ' + data.message);
         }
     } catch (error) {
         loadingMsg.remove();
-        addMessage('ai', '❌ Gagal terhubung ke server. Coba lagi nanti.');
-        console.error('Error:', error);
+        addMessage('ai', '❌ Gagal terhubung ke server.');
     }
 }
 
 // ============================================
 // ADD HISTORY ITEM
 // ============================================
-function addHistoryItem(title) {
+function addHistoryItem(title, chatId) {
     const item = document.createElement('div');
-    item.className = 'history-item active';
+    item.className = 'history-item';
     item.textContent = title;
     item.onclick = function() {
         document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
         this.classList.add('active');
+        loadChat(chatId, title);
     };
     historyList.insertBefore(item, historyList.firstChild);
-    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-    item.classList.add('active');
 }
 
 // ============================================
@@ -287,13 +350,11 @@ function logout() {
 }
 
 // ============================================
-// PULSE ANIMATION
+// INIT
 // ============================================
+loadToken();
+loadHistory();
+
 const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
-    }
-`;
+style.textContent = `@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`;
 document.head.appendChild(style);
