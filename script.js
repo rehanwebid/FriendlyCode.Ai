@@ -28,6 +28,49 @@
     }, 1000);
 })();
 
+// ============================================
+// 🔐 GOOGLE LOGIN
+// ============================================
+function googleSignIn() {
+    if (!window.auth || !window.provider) {
+        alert('Firebase belum siap. Tunggu sebentar...');
+        return;
+    }
+    
+    window.signInWithPopup(window.auth, window.provider)
+        .then((result) => {
+            const user = result.user;
+            localStorage.setItem('friendlyUser', JSON.stringify({
+                name: user.displayName,
+                email: user.email,
+                photo: user.photoURL
+            }));
+            window.location.href = 'web.html';
+        })
+        .catch((error) => {
+            console.error('Login error:', error);
+            alert('Gagal login! Coba lagi.');
+        });
+}
+
+// ============================================
+// AUTO REDIRECT IF LOGGED IN
+// ============================================
+window.addEventListener('load', () => {
+    if (window.onAuthStateChanged && window.auth) {
+        window.onAuthStateChanged(window.auth, (user) => {
+            if (user && window.location.pathname.includes('index.html')) {
+                localStorage.setItem('friendlyUser', JSON.stringify({
+                    name: user.displayName,
+                    email: user.email,
+                    photo: user.photoURL
+                }));
+                window.location.href = 'web.html';
+            }
+        });
+    }
+});
+
 // Navbar scroll
 window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
