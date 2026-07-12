@@ -89,14 +89,12 @@
 
     <!-- POPUP PEMBELIAN -->
     <div class="purchase-overlay" id="purchaseOverlay" onclick="closePurchasePopup()"></div>
-    <div class="purchase-popup" id="purchasePopup">
+    <div class="purchase-popup" id="purchasePopup" onclick="event.stopPropagation()">
         <div class="purchase-popup-header">
             <span>Upgrade Paket</span>
             <button class="purchase-close" onclick="closePurchasePopup()">✕</button>
         </div>
-        <div class="purchase-popup-body" id="purchasePopupBody">
-            <!-- Konten paket akan diisi oleh JavaScript -->
-        </div>
+        <div class="purchase-popup-body" id="purchasePopupBody"></div>
     </div>
 
     <script src="web.js"></script>
