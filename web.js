@@ -45,8 +45,6 @@ async function loadToken() {
             tokenCount = data.token;
             userStatus = data.userStatus || 'active';
             updateToken();
-            
-            // Enable/disable VIP button
             const vipBtn = document.querySelector('.mode-btn[data-mode="vip"]');
             if (vipBtn && userStatus !== 'vip') {
                 vipBtn.style.opacity = '0.4';
@@ -64,7 +62,6 @@ async function loadHistory() {
     try {
         const response = await fetch(API_URL + '?action=getHistory&email=' + userData.email);
         const data = await response.json();
-        
         if (data.status === 'success' && data.history) {
             historyList.innerHTML = '';
             Object.values(data.history).forEach(chat => {
@@ -95,7 +92,6 @@ function setMode(mode, btn) {
         }
         messageInput.placeholder = 'VIP Mode...';
     }
-    
     checkModeAccess();
 }
 
@@ -198,7 +194,6 @@ function loadChat(chatId, title) {
 function updateToken() {
     const countEl = document.getElementById('tokenCount');
     countEl.textContent = tokenCount;
-    
     if (tokenCount <= 0) {
         countEl.classList.add('empty');
         checkModeAccess();
@@ -325,12 +320,66 @@ function formatText(text) {
         const parts = text.split('```');
         return parts.map((part, i) => {
             if (i % 2 === 1) {
-                return `<div class="message-code">${escapeHtml(part.trim())}</div>`;
+                const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
+                return `
+                    <div class="message-code-wrapper">
+                        <div class="code-actions">
+                            <button class="code-btn" onclick="copyCode('${codeId}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Salin
+                            </button>
+                            <button class="code-btn" onclick="runCode('${codeId}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Jalankan
+                            </button>
+                        </div>
+                        <pre class="message-code" id="${codeId}">${escapeHtml(part.trim())}</pre>
+                    </div>
+                `;
             }
             return escapeHtml(part).replace(/\n/g, '<br>');
         }).join('');
     }
     return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+// ============================================
+// COPY CODE
+// ============================================
+function copyCode(codeId) {
+    const codeBlock = document.getElementById(codeId);
+    const code = codeBlock.textContent;
+    
+    navigator.clipboard.writeText(code).then(() => {
+        const wrapper = codeBlock.parentElement;
+        const btn = wrapper.querySelector('.code-btn');
+        btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Tersalin!
+        `;
+        btn.style.color = '#10B981';
+        btn.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        
+        setTimeout(() => {
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Salin
+            `;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    });
+}
+
+// ============================================
+// RUN CODE
+// ============================================
+function runCode(codeId) {
+    const codeBlock = document.getElementById(codeId);
+    const code = codeBlock.textContent;
+    const newWindow = window.open('', '_blank');
+    newWindow.document.write(code);
+    newWindow.document.close();
 }
 
 function escapeHtml(text) {
