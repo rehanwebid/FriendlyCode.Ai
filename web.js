@@ -11,9 +11,7 @@ const userData = JSON.parse(localStorage.getItem('friendlyUser') || '{}');
 if (userData.name) {
     document.getElementById('sidebarUsername').textContent = userData.name;
     const userPhoto = document.getElementById('userPhoto');
-    if (userData.photo) {
-        userPhoto.src = userData.photo;
-    }
+    if (userData.photo) userPhoto.src = userData.photo;
 } else {
     window.location.href = 'index.html';
 }
@@ -35,52 +33,43 @@ const headerTitle = document.getElementById('headerTitle');
 const historyList = document.getElementById('historyList');
 
 // ============================================
-// LOAD TOKEN FROM SERVER
+// LOAD TOKEN
 // ============================================
 async function loadToken() {
     try {
-        const response = await fetch(API_URL + '?action=getToken&email=' + userData.email);
-        const data = await response.json();
+        const res = await fetch(API_URL + '?action=getToken&email=' + userData.email);
+        const data = await res.json();
         if (data.status === 'success') {
             tokenCount = data.token;
             userStatus = data.userStatus || 'active';
             updateToken();
             const vipBtn = document.querySelector('.mode-btn[data-mode="vip"]');
-            if (vipBtn && userStatus !== 'vip') {
-                vipBtn.style.opacity = '0.4';
-            }
+            if (vipBtn && userStatus !== 'vip') vipBtn.style.opacity = '0.4';
         }
-    } catch (error) {
-        console.error('Gagal load token:', error);
-    }
+    } catch (e) { console.error(e); }
 }
 
 // ============================================
-// LOAD HISTORY FROM SERVER
+// LOAD HISTORY
 // ============================================
 async function loadHistory() {
     try {
-        const response = await fetch(API_URL + '?action=getHistory&email=' + userData.email);
-        const data = await response.json();
+        const res = await fetch(API_URL + '?action=getHistory&email=' + userData.email);
+        const data = await res.json();
         if (data.status === 'success' && data.history) {
             historyList.innerHTML = '';
-            Object.values(data.history).forEach(chat => {
-                addHistoryItem(chat.title, chat.chatId);
-            });
+            Object.values(data.history).forEach(c => addHistoryItem(c.title, c.chatId));
         }
-    } catch (error) {
-        console.error('Gagal load history:', error);
-    }
+    } catch (e) { console.error(e); }
 }
 
 // ============================================
-// MODE SELECTOR
+// MODE
 // ============================================
 function setMode(mode, btn) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentMode = mode;
-    
     if (mode === 'ngobrol') messageInput.placeholder = 'Ngobrol...';
     else if (mode === 'ngoding') messageInput.placeholder = 'Minta kode... (1 token)';
     else if (mode === 'vip') {
@@ -96,14 +85,12 @@ function checkModeAccess() {
         messageInput.placeholder = 'Upgrade ke VIP...';
     } else if (currentMode === 'ngoding' && tokenCount <= 0) {
         messageInput.disabled = true; sendBtn.disabled = true;
-        messageInput.placeholder = 'Token habis. Beli token untuk lanjut.';
-    } else {
-        messageInput.disabled = false; sendBtn.disabled = false;
-    }
+        messageInput.placeholder = 'Token habis.';
+    } else { messageInput.disabled = false; sendBtn.disabled = false; }
 }
 
 // ============================================
-// AUTO RESIZE TEXTAREA
+// AUTO RESIZE
 // ============================================
 function autoResize(el) {
     el.style.height = 'auto';
@@ -111,16 +98,7 @@ function autoResize(el) {
     sendBtn.disabled = el.value.trim() === '';
 }
 
-// ============================================
-// HANDLE ENTER
-// ============================================
-function handleKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); kirimPesan(); }
-}
-
-// ============================================
-// ASK SUGGESTION
-// ============================================
+function handleKeyDown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); kirimPesan(); } }
 function askSuggestion(text) { messageInput.value = text; autoResize(messageInput); kirimPesan(); }
 
 // ============================================
@@ -128,19 +106,9 @@ function askSuggestion(text) { messageInput.value = text; autoResize(messageInpu
 // ============================================
 function newChat() {
     chatArea.innerHTML = '';
-    const welcomeDiv = document.createElement('div');
-    welcomeDiv.className = 'welcome'; welcomeDiv.id = 'welcomeScreen';
-    welcomeDiv.innerHTML = `
-        <h2>Halo! Ada yang bisa dibantu?</h2>
-        <p>Tanya seputar coding, debugging, atau konsep programming.</p>
-        <div class="suggestions">
-            <button class="suggestion-chip" onclick="askSuggestion('Buatkan navbar responsive dengan HTML CSS')">Buatkan navbar responsive</button>
-            <button class="suggestion-chip" onclick="askSuggestion('Jelaskan konsep async/await di JavaScript')">Jelaskan async/await</button>
-            <button class="suggestion-chip" onclick="askSuggestion('Debug: TypeError undefined is not a function')">Debug TypeError</button>
-            <button class="suggestion-chip" onclick="askSuggestion('Buatkan fungsi fetch API dengan error handling')">Fetch API example</button>
-        </div>
-    `;
-    chatArea.appendChild(welcomeDiv);
+    const w = document.createElement('div'); w.className = 'welcome'; w.id = 'welcomeScreen';
+    w.innerHTML = `<h2>Halo! Ada yang bisa dibantu?</h2><p>Tanya seputar coding, debugging, atau konsep programming.</p><div class="suggestions"><button class="suggestion-chip" onclick="askSuggestion('Buatkan navbar responsive dengan HTML CSS')">Buatkan navbar responsive</button><button class="suggestion-chip" onclick="askSuggestion('Jelaskan konsep async/await di JavaScript')">Jelaskan async/await</button><button class="suggestion-chip" onclick="askSuggestion('Debug: TypeError undefined is not a function')">Debug TypeError</button><button class="suggestion-chip" onclick="askSuggestion('Buatkan fungsi fetch API dengan error handling')">Fetch API example</button></div>`;
+    chatArea.appendChild(w);
     currentChatId = 'chat_' + Date.now(); currentChatTitle = 'New Chat';
     updateHeaderTitle(); messageInput.disabled = false;
     messageInput.placeholder = 'Ngobrol...';
@@ -148,180 +116,115 @@ function newChat() {
     checkModeAccess();
 }
 
-// ============================================
-// LOAD CHAT HISTORY
-// ============================================
 function loadChat(chatId, title) {
     currentChatId = chatId; currentChatTitle = title; updateHeaderTitle();
-    fetch(API_URL + '?action=getHistory&email=' + userData.email)
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success' && data.history[chatId]) {
-                chatArea.innerHTML = '';
-                data.history[chatId].messages.forEach(msg => {
-                    addMessage('user', msg.user_message);
-                    addMessage('ai', msg.ai_response);
-                });
-            }
-        });
+    fetch(API_URL + '?action=getHistory&email=' + userData.email).then(r => r.json()).then(d => {
+        if (d.status === 'success' && d.history[chatId]) {
+            chatArea.innerHTML = '';
+            d.history[chatId].messages.forEach(m => { addMessage('user', m.user_message); addMessage('ai', m.ai_response); });
+        }
+    });
 }
 
-// ============================================
-// UPDATE TOKEN
-// ============================================
 function updateToken() {
-    const countEl = document.getElementById('tokenCount'); countEl.textContent = tokenCount;
-    if (tokenCount <= 0) { countEl.classList.add('empty'); checkModeAccess(); }
-    else { countEl.classList.remove('empty'); }
+    const c = document.getElementById('tokenCount'); c.textContent = tokenCount;
+    if (tokenCount <= 0) { c.classList.add('empty'); checkModeAccess(); }
+    else { c.classList.remove('empty'); }
 }
-
-// ============================================
-// UPDATE HEADER TITLE
-// ============================================
 function updateHeaderTitle() { headerTitle.textContent = currentChatTitle; }
 
 // ============================================
 // KIRIM PESAN
 // ============================================
 async function kirimPesan() {
-    const message = messageInput.value.trim();
-    if (!message) return;
+    const msg = messageInput.value.trim();
+    if (!msg) return;
     if (currentMode === 'ngoding' && tokenCount <= 0) { alert('Token habis!'); return; }
-
-    const welcome = document.getElementById('welcomeScreen');
-    if (welcome) welcome.style.display = 'none';
-
-    if (currentChatTitle === 'New Chat') {
-        currentChatTitle = message.substring(0, 40) + (message.length > 40 ? '...' : '');
-        updateHeaderTitle(); addHistoryItem(currentChatTitle, currentChatId);
-    }
-
-    addMessage('user', message);
+    const w = document.getElementById('welcomeScreen'); if (w) w.style.display = 'none';
+    if (currentChatTitle === 'New Chat') { currentChatTitle = msg.substring(0,40)+(msg.length>40?'...':''); updateHeaderTitle(); addHistoryItem(currentChatTitle, currentChatId); }
+    addMessage('user', msg);
     messageInput.value = ''; autoResize(messageInput); sendBtn.disabled = true;
-
-    const loadingMsg = addMessage('ai', '...');
+    const ld = addMessage('ai', '...');
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'chat', email: userData.email, name: userData.name, message: message, mode: currentMode, chatId: currentChatId })
-        });
-        const data = await response.json(); loadingMsg.remove();
-        if (data.status === 'success') { addMessage('ai', data.response); tokenCount = data.token; updateToken(); }
-        else { addMessage('ai', '⚠️ ' + data.message); }
-    } catch (error) { loadingMsg.remove(); addMessage('ai', '❌ Gagal terhubung ke server.'); }
+        const r = await fetch(API_URL, { method:'POST', body:JSON.stringify({action:'chat',email:userData.email,name:userData.name,message:msg,mode:currentMode,chatId:currentChatId}) });
+        const d = await r.json(); ld.remove();
+        if (d.status==='success') { addMessage('ai', d.response); tokenCount = d.token; updateToken(); }
+        else { addMessage('ai', '⚠️ '+d.message); }
+    } catch(e) { ld.remove(); addMessage('ai', '❌ Gagal terhubung.'); }
 }
 
-// ============================================
-// ADD HISTORY ITEM
-// ============================================
 function addHistoryItem(title, chatId) {
-    const item = document.createElement('div'); item.className = 'history-item'; item.textContent = title;
-    item.onclick = function() {
-        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-        this.classList.add('active'); loadChat(chatId, title);
-    };
+    const item = document.createElement('div'); item.className='history-item'; item.textContent=title;
+    item.onclick=function(){ document.querySelectorAll('.history-item').forEach(el=>el.classList.remove('active')); this.classList.add('active'); loadChat(chatId,title); };
     historyList.insertBefore(item, historyList.firstChild);
 }
 
-// ============================================
-// ADD MESSAGE
-// ============================================
 function addMessage(type, text) {
-    const msgDiv = document.createElement('div'); msgDiv.className = `message ${type}`;
-    let avatarHTML = '';
-    if (type === 'ai') { avatarHTML = '<div class="message-avatar">AI</div>'; }
-    else {
-        if (userData.photo) { avatarHTML = `<div class="message-avatar"><img src="${userData.photo}" alt="Profile"></div>`; }
-        else { avatarHTML = `<div class="message-avatar">${userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}</div>`; }
-    }
-    msgDiv.innerHTML = `${avatarHTML}<div class="message-content"><div class="message-text">${formatText(text)}</div></div>`;
-    chatArea.appendChild(msgDiv); chatArea.scrollTop = chatArea.scrollHeight;
-    return msgDiv;
+    const div = document.createElement('div'); div.className = `message ${type}`;
+    let av = '';
+    if (type==='ai') av = '<div class="message-avatar">AI</div>';
+    else { if(userData.photo) av = `<div class="message-avatar"><img src="${userData.photo}" alt="Profile"></div>`; else av = `<div class="message-avatar">${userData.name?userData.name.charAt(0).toUpperCase():'U'}</div>`; }
+    div.innerHTML = `${av}<div class="message-content"><div class="message-text">${formatText(text)}</div></div>`;
+    chatArea.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
+    return div;
 }
 
-// ============================================
-// FORMAT TEXT
-// ============================================
 function formatText(text) {
-    if (text === '...') return '<span style="animation:pulse 1s infinite;">Memikirkan...</span>';
+    if (text==='...') return '<span style="animation:pulse 1s infinite;">Memikirkan...</span>';
     if (text.includes('```')) {
         const parts = text.split('```');
-        return parts.map((part, i) => {
-            if (i % 2 === 1) {
-                const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
-                let cleanCode = part.trim();
-                const firstLine = cleanCode.split('\n')[0];
-                if (firstLine && !firstLine.includes(' ') && firstLine.length < 20) { cleanCode = cleanCode.substring(firstLine.length).trim(); }
-                return `
-                    <div class="message-code-wrapper">
-                        <div class="code-actions">
-                            <button class="code-btn" onclick="copyCode('${codeId}')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin
-                            </button>
-                            <button class="code-btn" onclick="runCode('${codeId}')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Jalankan
-                            </button>
-                        </div>
-                        <pre class="message-code" id="${codeId}">${escapeHtml(cleanCode)}</pre>
-                    </div>`;
+        return parts.map((part,i) => {
+            if (i%2===1) {
+                const id = 'code_'+Math.random().toString(36).substr(2,9);
+                let clean = part.trim();
+                const fl = clean.split('\n')[0];
+                if (fl && !fl.includes(' ') && fl.length<20) clean = clean.substring(fl.length).trim();
+                return `<div class="message-code-wrapper"><div class="code-actions"><button class="code-btn" onclick="copyCode('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin</button><button class="code-btn" onclick="runCode('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Jalankan</button></div><pre class="message-code" id="${id}">${escapeHtml(clean)}</pre></div>`;
             }
-            return escapeHtml(part).replace(/\n/g, '<br>');
+            return escapeHtml(part).replace(/\n/g,'<br>');
         }).join('');
     }
-    text = text.replace(/`([^`]+)`/g, '<code style="background:#010409;padding:2px 6px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:12px;">$1</code>');
-    return escapeHtml(text).replace(/\n/g, '<br>');
+    text = text.replace(/`([^`]+)`/g,'<code style="background:#010409;padding:2px 6px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:12px;">$1</code>');
+    return escapeHtml(text).replace(/\n/g,'<br>');
 }
 
-// ============================================
-// COPY CODE
-// ============================================
-function copyCode(codeId) {
-    const codeBlock = document.getElementById(codeId);
-    if (!codeBlock) return;
-    navigator.clipboard.writeText(codeBlock.textContent).then(() => {
-        const wrapper = codeBlock.parentElement;
-        const btn = wrapper.querySelector('.code-btn');
-        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Tersalin!`;
-        btn.style.color = '#10B981'; btn.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-        setTimeout(() => {
-            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin`;
-            btn.style.color = ''; btn.style.borderColor = '';
-        }, 2000);
+function copyCode(id) {
+    const block = document.getElementById(id); if(!block) return;
+    navigator.clipboard.writeText(block.textContent).then(()=>{
+        const btn = block.parentElement.querySelector('.code-btn');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Tersalin!';
+        btn.style.color='#10B981'; btn.style.borderColor='rgba(16,185,129,0.3)';
+        setTimeout(()=>{ btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin'; btn.style.color=''; btn.style.borderColor=''; },2000);
     });
 }
 
 // ============================================
-// RUN CODE (PREVIEW PANEL)
+// RUN CODE (SIDEBAR NUTUP)
 // ============================================
-function runCode(codeId) {
-    const codeBlock = document.getElementById(codeId);
-    if (!codeBlock) return;
-    const code = codeBlock.textContent;
-    document.getElementById('previewFrame').srcdoc = code;
+function runCode(id) {
+    const block = document.getElementById(id); if(!block) return;
+    document.getElementById('previewFrame').srcdoc = block.textContent;
     document.getElementById('previewPanel').classList.add('show');
     document.getElementById('previewOverlay').classList.add('show');
+    document.getElementById('sidebar').style.display = 'none';
 }
 
 function closePreview() {
     document.getElementById('previewPanel').classList.remove('show');
     document.getElementById('previewOverlay').classList.remove('show');
+    document.getElementById('previewFrame').srcdoc = '';
+    document.getElementById('sidebar').style.display = 'flex';
 }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closePreview(); });
 
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePreview(); });
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-
-// ============================================
-// LOGOUT
-// ============================================
-function logout() {
-    if (confirm('Yakin ingin keluar?')) { localStorage.removeItem('friendlyUser'); window.location.href = 'index.html'; }
-}
+function logout() { if(confirm('Yakin ingin keluar?')){ localStorage.removeItem('friendlyUser'); window.location.href='index.html'; } }
 
 // ============================================
 // INIT
 // ============================================
 loadToken(); loadHistory();
-const style = document.createElement('style');
-style.textContent = `@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`;
-document.head.appendChild(style);
+const st = document.createElement('style');
+st.textContent = '@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}';
+document.head.appendChild(st);
