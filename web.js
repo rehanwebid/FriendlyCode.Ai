@@ -14,6 +14,16 @@ let tokenCount = 3, userStatus = 'active', currentChatId = 'new', currentChatTit
 const chatArea = document.getElementById('chatArea'), messageInput = document.getElementById('messageInput'), sendBtn = document.getElementById('sendBtn');
 const tokenDisplay = document.getElementById('tokenCount'), headerTitle = document.getElementById('headerTitle'), historyList = document.getElementById('historyList');
 
+// ============================================
+// TOGGLE SIDEBAR (MOBILE)
+// ============================================
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('show');
+}
+
 async function loadToken() {
     try { const r = await fetch(API_URL + '?action=getToken&email=' + userData.email), d = await r.json(); if (d.status === 'success') { tokenCount = d.token; userStatus = d.userStatus || 'active'; updateToken(); const v = document.querySelector('.mode-btn[data-mode="vip"]'); if (v && userStatus !== 'vip') v.style.opacity = '0.4'; } } catch (e) {}
 }
@@ -72,26 +82,14 @@ async function kirimPesan() {
     } catch(e) { ld.remove(); addMessage('ai', '❌ Gagal terhubung.'); }
 }
 
-// ============================================
-// ADD HISTORY ITEM (KLIK KANAN & TEKAN LAMA)
-// ============================================
 function addHistoryItem(title, chatId) {
-    const item = document.createElement('div');
-    item.className = 'history-item'; item.textContent = title; item.dataset.chatId = chatId;
-    
-    item.onclick = function(e) {
-        if (e.target.closest('.delete-popup')) return;
-        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-        this.classList.add('active'); loadChat(chatId, title);
-    };
-    
+    const item = document.createElement('div'); item.className = 'history-item'; item.textContent = title; item.dataset.chatId = chatId;
+    item.onclick = function(e) { if (e.target.closest('.delete-popup')) return; document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active')); this.classList.add('active'); loadChat(chatId, title); if(window.innerWidth<=768) toggleSidebar(); };
     item.addEventListener('contextmenu', function(e) { e.preventDefault(); showDeletePopup(e, chatId, title); });
-    
     let longPressTimer;
     item.addEventListener('touchstart', function(e) { longPressTimer = setTimeout(() => showDeletePopup(e, chatId, title), 600); });
     item.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
     item.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
-    
     historyList.insertBefore(item, historyList.firstChild);
 }
 
