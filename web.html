@@ -85,6 +85,16 @@
         </div>
     </main>
 
+    <!-- PREVIEW PANEL -->
+    <div class="preview-overlay" id="previewOverlay" onclick="closePreview()"></div>
+    <div class="preview-panel" id="previewPanel">
+        <div class="preview-header">
+            <span>Preview</span>
+            <button class="preview-close" onclick="closePreview()">✕</button>
+        </div>
+        <iframe class="preview-frame" id="previewFrame"></iframe>
+    </div>
+
     <script src="web.js"></script>
 </body>
 </html>
