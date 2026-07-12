@@ -114,21 +114,25 @@ body {
 .delete-btn.confirm:hover { background: #DC2626; }
 
 /* ========== PURCHASE POPUP ========== */
-.purchase-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 400; display: none; opacity: 0; transition: opacity 0.3s; justify-content: center; align-items: center; }
-.purchase-overlay.show { display: flex; opacity: 1; }
-.purchase-popup { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; z-index: 401; animation: popIn 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-.purchase-popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.purchase-popup-header span { font-weight: 700; font-size: 18px; color: var(--text); }
-.purchase-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 4px; transition: color 0.2s; }
-.purchase-close:hover { color: var(--text); }
-.purchase-popup-body { display: flex; flex-direction: column; gap: 12px; }
-.popup-pricing-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
-.popup-pricing-card:hover { border-color: rgba(255,255,255,0.1); }
-.popup-pricing-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-.popup-pricing-info p { font-size: 12px; color: var(--muted); }
-.popup-pricing-price { font-weight: 700; font-size: 16px; color: var(--accent); }
-.popup-buy-btn { padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; }
-.popup-buy-btn:hover { background: #388BFD; transform: scale(1.02); }
+.purchase-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s; justify-content: center; align-items: center; pointer-events: none; }
+.purchase-overlay.show { display: flex; opacity: 1; pointer-events: all; }
+.purchase-popup { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 28px 24px; max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto; z-index: 10000; animation: popIn 0.3s ease; box-shadow: 0 30px 80px rgba(0,0,0,0.8); }
+.purchase-popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.purchase-popup-header span { font-weight: 700; font-size: 20px; color: var(--text); letter-spacing: -0.5px; }
+.purchase-close { background: rgba(255,255,255,0.08); border: none; color: var(--muted); font-size: 18px; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.purchase-close:hover { background: rgba(255,255,255,0.15); color: var(--text); }
+.purchase-popup-body { display: flex; flex-direction: column; gap: 14px; }
+.popup-pricing-card { background: var(--bg); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 20px 18px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; position: relative; }
+.popup-pricing-card.featured { border-color: var(--accent); box-shadow: 0 0 30px rgba(31,111,235,0.1); }
+.popup-badge { position: absolute; top: -10px; right: 16px; background: var(--accent); color: white; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; }
+.popup-pricing-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.popup-pricing-info p { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.popup-pricing-features { list-style: none; margin-top: 6px; }
+.popup-pricing-features li { font-size: 11px; color: var(--muted); padding: 2px 0; display: flex; align-items: center; gap: 6px; }
+.popup-pricing-features li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+.popup-pricing-price { font-weight: 700; font-size: 18px; color: var(--accent); white-space: nowrap; }
+.popup-buy-btn { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; white-space: nowrap; }
+.popup-buy-btn:hover { background: #388BFD; transform: scale(1.03); }
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
