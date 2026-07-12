@@ -253,6 +253,8 @@ async function kirimPesan() {
         const data = await response.json();
         loadingMsg.remove();
         
+        console.log('AI Response:', data); // DEBUG
+        
         if (data.status === 'success') {
             addMessage('ai', data.response);
             tokenCount = data.token;
@@ -262,6 +264,7 @@ async function kirimPesan() {
         }
     } catch (error) {
         loadingMsg.remove();
+        console.error('Error:', error);
         addMessage('ai', '❌ Gagal terhubung ke server.');
     }
 }
@@ -316,11 +319,18 @@ function addMessage(type, text) {
 function formatText(text) {
     if (text === '...') return '<span style="animation:pulse 1s infinite;">Memikirkan...</span>';
     
+    // Cek apakah ada code block
     if (text.includes('```')) {
         const parts = text.split('```');
         return parts.map((part, i) => {
             if (i % 2 === 1) {
                 const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
+                // Hapus bahasa pemrograman di baris pertama (html, javascript, dll)
+                let cleanCode = part.trim();
+                const firstLine = cleanCode.split('\n')[0];
+                if (firstLine && !firstLine.includes(' ') && firstLine.length < 20) {
+                    cleanCode = cleanCode.substring(firstLine.length).trim();
+                }
                 return `
                     <div class="message-code-wrapper">
                         <div class="code-actions">
@@ -333,13 +343,17 @@ function formatText(text) {
                                 Jalankan
                             </button>
                         </div>
-                        <pre class="message-code" id="${codeId}">${escapeHtml(part.trim())}</pre>
+                        <pre class="message-code" id="${codeId}">${escapeHtml(cleanCode)}</pre>
                     </div>
                 `;
             }
             return escapeHtml(part).replace(/\n/g, '<br>');
         }).join('');
     }
+    
+    // Cek inline code (`code`)
+    text = text.replace(/`([^`]+)`/g, '<code style="background:#010409;padding:2px 6px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:12px;">$1</code>');
+    
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
@@ -348,11 +362,14 @@ function formatText(text) {
 // ============================================
 function copyCode(codeId) {
     const codeBlock = document.getElementById(codeId);
+    if (!codeBlock) return;
     const code = codeBlock.textContent;
     
     navigator.clipboard.writeText(code).then(() => {
         const wrapper = codeBlock.parentElement;
-        const btn = wrapper.querySelector('.code-btn');
+        const btns = wrapper.querySelectorAll('.code-btn');
+        const btn = btns[0]; // Tombol Salin
+        
         btn.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             Tersalin!
@@ -368,6 +385,9 @@ function copyCode(codeId) {
             btn.style.color = '';
             btn.style.borderColor = '';
         }, 2000);
+    }).catch(err => {
+        console.error('Copy failed:', err);
+        alert('Gagal menyalin. Coba lagi.');
     });
 }
 
@@ -376,6 +396,7 @@ function copyCode(codeId) {
 // ============================================
 function runCode(codeId) {
     const codeBlock = document.getElementById(codeId);
+    if (!codeBlock) return;
     const code = codeBlock.textContent;
     const newWindow = window.open('', '_blank');
     newWindow.document.write(code);
