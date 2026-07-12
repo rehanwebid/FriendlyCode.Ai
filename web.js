@@ -31,6 +31,39 @@ function closeSidebar() {
     overlay.classList.remove('show');
 }
 
+// ============================================
+// PURCHASE POPUP
+// ============================================
+function showPurchasePopup() {
+    const overlay = document.getElementById('purchaseOverlay');
+    const body = document.getElementById('purchasePopupBody');
+    const packages = [
+        { name: 'Pro', price: 'Rp 30.000', desc: '15 Token Ngoding', action: 'pro' },
+        { name: 'VIP', price: 'Rp 50.000', desc: '30 Hari Unlimited', action: 'vip' }
+    ];
+    body.innerHTML = packages.map(p => `
+        <div class="popup-pricing-card">
+            <div class="popup-pricing-info"><h4>${p.name}</h4><p>${p.desc}</p></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span class="popup-pricing-price">${p.price}</span>
+                <button class="popup-buy-btn" onclick="buyNow('${p.action}')">Beli</button>
+            </div>
+        </div>
+    `).join('');
+    overlay.classList.add('show');
+}
+function closePurchasePopup() { document.getElementById('purchaseOverlay').classList.remove('show'); }
+
+function buyNow(plan) {
+    const plans = {
+        pro: { name: 'Pro', price: 'Rp 30.000', tokens: '15 Token' },
+        vip: { name: 'VIP', price: 'Rp 50.000', tokens: '30 Hari Unlimited' }
+    };
+    const p = plans[plan];
+    const msg = `Halo admin FriendlyCode, saya ingin membeli paket ${p.name} (${p.tokens}) seharga ${p.price}. Mohon info pembayarannya.`;
+    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
 async function loadToken() {
     try { const r = await fetch(API_URL + '?action=getToken&email=' + userData.email), d = await r.json(); if (d.status === 'success') { tokenCount = d.token; userStatus = d.userStatus || 'active'; updateToken(); const v = document.querySelector('.mode-btn[data-mode="vip"]'); if (v && userStatus !== 'vip') v.style.opacity = '0.4'; } } catch (e) {}
 }
@@ -47,7 +80,7 @@ function setMode(mode, btn) {
 }
 function checkModeAccess() {
     if (currentMode === 'vip' && userStatus !== 'vip') { messageInput.disabled = true; sendBtn.disabled = true; messageInput.placeholder = 'Upgrade ke VIP...'; }
-    else if (currentMode === 'ngoding' && tokenCount <= 0) { messageInput.disabled = true; sendBtn.disabled = true; messageInput.placeholder = 'Token habis.'; }
+    else if (currentMode === 'ngoding' && tokenCount <= 0) { messageInput.disabled = true; sendBtn.disabled = true; messageInput.placeholder = 'Token habis. Beli token untuk lanjut.'; }
     else { messageInput.disabled = false; sendBtn.disabled = false; }
 }
 
@@ -76,7 +109,11 @@ function updateHeaderTitle() { headerTitle.textContent = currentChatTitle; }
 
 async function kirimPesan() {
     const msg = messageInput.value.trim(); if (!msg) return;
-    if (currentMode === 'ngoding' && tokenCount <= 0) { alert('Token habis!'); return; }
+    
+    // Cek popup
+    if (currentMode === 'ngoding' && tokenCount <= 0) { showPurchasePopup(); return; }
+    if (currentMode === 'vip' && userStatus !== 'vip') { showPurchasePopup(); return; }
+    
     const w = document.getElementById('welcomeScreen'); if (w) w.style.display = 'none';
     if (currentChatTitle === 'New Chat') { currentChatTitle = msg.substring(0,40)+(msg.length>40?'...':''); updateHeaderTitle(); addHistoryItem(currentChatTitle, currentChatId); }
     addMessage('user', msg); messageInput.value = ''; autoResize(messageInput); sendBtn.disabled = true;
