@@ -21,7 +21,14 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
     sidebar.classList.toggle('open');
-    if (overlay) overlay.classList.toggle('show');
+    if (sidebar.classList.contains('open')) { overlay.classList.add('show'); }
+    else { overlay.classList.remove('show'); }
+}
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
 }
 
 async function loadToken() {
@@ -84,7 +91,7 @@ async function kirimPesan() {
 
 function addHistoryItem(title, chatId) {
     const item = document.createElement('div'); item.className = 'history-item'; item.textContent = title; item.dataset.chatId = chatId;
-    item.onclick = function(e) { if (e.target.closest('.delete-popup')) return; document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active')); this.classList.add('active'); loadChat(chatId, title); if(window.innerWidth<=768) toggleSidebar(); };
+    item.onclick = function(e) { if (e.target.closest('.delete-popup')) return; document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active')); this.classList.add('active'); loadChat(chatId, title); if(window.innerWidth<=768) closeSidebar(); };
     item.addEventListener('contextmenu', function(e) { e.preventDefault(); showDeletePopup(e, chatId, title); });
     let longPressTimer;
     item.addEventListener('touchstart', function(e) { longPressTimer = setTimeout(() => showDeletePopup(e, chatId, title), 600); });
