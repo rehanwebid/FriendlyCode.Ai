@@ -3,9 +3,6 @@
 // ============================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbwNJ8E52DLKj10e0kaUDcVASaw2V4uyxsoX9bmfP-ts7jC0lYOlKCyHaBk6SXX537Ukdw/exec';
 
-// ============================================
-// LOAD USER DATA
-// ============================================
 const userData = JSON.parse(localStorage.getItem('friendlyUser') || '{}');
 if (userData.name) {
     document.getElementById('sidebarUsername').textContent = userData.name;
@@ -13,25 +10,15 @@ if (userData.name) {
     if (userData.photo) userPhoto.src = userData.photo;
 } else { window.location.href = 'index.html'; }
 
-// ============================================
-// CONFIG
-// ============================================
 let tokenCount = 3, userStatus = 'active', currentChatId = 'new', currentChatTitle = 'New Chat', currentMode = 'ngobrol';
 const chatArea = document.getElementById('chatArea'), messageInput = document.getElementById('messageInput'), sendBtn = document.getElementById('sendBtn');
 const tokenDisplay = document.getElementById('tokenCount'), headerTitle = document.getElementById('headerTitle'), historyList = document.getElementById('historyList');
 
 async function loadToken() {
-    try {
-        const r = await fetch(API_URL + '?action=getToken&email=' + userData.email), d = await r.json();
-        if (d.status === 'success') { tokenCount = d.token; userStatus = d.userStatus || 'active'; updateToken(); const v = document.querySelector('.mode-btn[data-mode="vip"]'); if (v && userStatus !== 'vip') v.style.opacity = '0.4'; }
-    } catch (e) {}
+    try { const r = await fetch(API_URL + '?action=getToken&email=' + userData.email), d = await r.json(); if (d.status === 'success') { tokenCount = d.token; userStatus = d.userStatus || 'active'; updateToken(); const v = document.querySelector('.mode-btn[data-mode="vip"]'); if (v && userStatus !== 'vip') v.style.opacity = '0.4'; } } catch (e) {}
 }
-
 async function loadHistory() {
-    try {
-        const r = await fetch(API_URL + '?action=getHistory&email=' + userData.email), d = await r.json();
-        if (d.status === 'success' && d.history) { historyList.innerHTML = ''; Object.values(d.history).forEach(c => addHistoryItem(c.title, c.chatId)); }
-    } catch (e) {}
+    try { const r = await fetch(API_URL + '?action=getHistory&email=' + userData.email), d = await r.json(); if (d.status === 'success' && d.history) { historyList.innerHTML = ''; Object.values(d.history).forEach(c => addHistoryItem(c.title, c.chatId)); } } catch (e) {}
 }
 
 function setMode(mode, btn) {
@@ -85,10 +72,44 @@ async function kirimPesan() {
     } catch(e) { ld.remove(); addMessage('ai', '❌ Gagal terhubung.'); }
 }
 
+// ============================================
+// ADD HISTORY ITEM (KLIK KANAN & TEKAN LAMA)
+// ============================================
 function addHistoryItem(title, chatId) {
-    const item = document.createElement('div'); item.className='history-item'; item.textContent=title;
-    item.onclick=function(){ document.querySelectorAll('.history-item').forEach(el=>el.classList.remove('active')); this.classList.add('active'); loadChat(chatId,title); };
+    const item = document.createElement('div');
+    item.className = 'history-item'; item.textContent = title; item.dataset.chatId = chatId;
+    
+    item.onclick = function(e) {
+        if (e.target.closest('.delete-popup')) return;
+        document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+        this.classList.add('active'); loadChat(chatId, title);
+    };
+    
+    item.addEventListener('contextmenu', function(e) { e.preventDefault(); showDeletePopup(e, chatId, title); });
+    
+    let longPressTimer;
+    item.addEventListener('touchstart', function(e) { longPressTimer = setTimeout(() => showDeletePopup(e, chatId, title), 600); });
+    item.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
+    item.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
+    
     historyList.insertBefore(item, historyList.firstChild);
+}
+
+function showDeletePopup(e, chatId, title) {
+    const old = document.querySelector('.delete-popup'); if (old) old.remove();
+    const popup = document.createElement('div'); popup.className = 'delete-popup';
+    popup.innerHTML = `<div class="delete-popup-text">Hapus "${title.substring(0,20)}..." ?</div><div class="delete-popup-actions"><button class="delete-btn cancel" onclick="this.closest('.delete-popup').remove()">Cancel</button><button class="delete-btn confirm" onclick="deleteChat('${chatId}', this)">Yes</button></div>`;
+    const rect = e.target.getBoundingClientRect();
+    popup.style.position = 'fixed'; popup.style.top = rect.bottom + 5 + 'px'; popup.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px'; popup.style.zIndex = '1000';
+    document.body.appendChild(popup);
+    setTimeout(() => { document.addEventListener('click', function close(ev) { if (!popup.contains(ev.target)) { popup.remove(); document.removeEventListener('click', close); } }); }, 100);
+}
+
+function deleteChat(chatId, btn) {
+    const item = document.querySelector(`.history-item[data-chat-id="${chatId}"]`); if (item) item.remove();
+    const popup = btn.closest('.delete-popup'); if (popup) popup.remove();
+    fetch(API_URL, { method:'POST', body:JSON.stringify({action:'deleteChat',email:userData.email,chatId:chatId}) }).catch(e => {});
+    if (currentChatId === chatId) newChat();
 }
 
 function addMessage(type, text) {
@@ -99,9 +120,6 @@ function addMessage(type, text) {
     chatArea.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight; return div;
 }
 
-// ============================================
-// FORMAT TEXT (DENGAN LOGIKA DETEKSI HTML)
-// ============================================
 function formatText(text) {
     if (text==='...') return '<span style="animation:pulse 1s infinite;">Memikirkan...</span>';
     if (text.includes('```')) {
@@ -109,33 +127,13 @@ function formatText(text) {
         return parts.map((part, i) => {
             if (i % 2 === 1) {
                 const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
-                let cleanCode = part.trim();
-                const firstLine = cleanCode.split('\n')[0];
-                if (firstLine && !firstLine.includes(' ') && firstLine.length < 20) cleanCode = cleanCode.substring(firstLine.length).trim();
-                
-                // Deteksi apakah ini HTML lengkap atau hanya CSS/JS
-                const isFullHTML = cleanCode.toLowerCase().includes('<!doctype') || cleanCode.toLowerCase().includes('<html');
-                
-                // Tombol dasar: selalu ada Salin + Download
-                let buttonsHTML = `
-                    <button class="code-btn" onclick="copyCode('${codeId}')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin
-                    </button>`;
-                
-                // Tombol Tampilkan hanya jika HTML lengkap
-                if (isFullHTML) {
-                    buttonsHTML += `
-                    <button class="code-btn" onclick="previewCode('${codeId}')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg> Tampilkan
-                    </button>`;
-                }
-                
-                buttonsHTML += `
-                    <button class="code-btn" onclick="downloadCode('${codeId}')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download
-                    </button>`;
-                
-                return `<div class="message-code-wrapper"><div class="code-actions">${buttonsHTML}</div><pre class="message-code" id="${codeId}">${escapeHtml(cleanCode)}</pre></div>`;
+                let clean = part.trim(); const fl = clean.split('\n')[0];
+                if (fl && !fl.includes(' ') && fl.length < 20) clean = clean.substring(fl.length).trim();
+                const isHTML = clean.toLowerCase().includes('<!doctype') || clean.toLowerCase().includes('<html');
+                let btns = `<button class="code-btn" onclick="copyCode('${codeId}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin</button>`;
+                if (isHTML) btns += `<button class="code-btn" onclick="previewCode('${codeId}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg> Tampilkan</button>`;
+                btns += `<button class="code-btn" onclick="downloadCode('${codeId}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download</button>`;
+                return `<div class="message-code-wrapper"><div class="code-actions">${btns}</div><pre class="message-code" id="${codeId}">${escapeHtml(clean)}</pre></div>`;
             }
             return escapeHtml(part).replace(/\n/g, '<br>');
         }).join('');
@@ -144,35 +142,20 @@ function formatText(text) {
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
-// ============================================
-// COPY CODE
-// ============================================
 function copyCode(id) {
-    const block = document.getElementById(id); if (!block) return;
-    navigator.clipboard.writeText(block.textContent).then(() => {
-        const btn = block.parentElement.querySelector('.code-btn');
+    const b = document.getElementById(id); if (!b) return;
+    navigator.clipboard.writeText(b.textContent).then(() => {
+        const btn = b.parentElement.querySelector('.code-btn');
         btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Tersalin!';
         btn.style.color = '#10B981'; btn.style.borderColor = 'rgba(16,185,129,0.3)';
         setTimeout(() => { btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin'; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
     });
 }
-
-// ============================================
-// PREVIEW CODE (TAB BARU)
-// ============================================
-function previewCode(id) {
-    const block = document.getElementById(id); if (!block) return;
-    const w = window.open('', '_blank'); w.document.write(block.textContent); w.document.close();
-}
-
-// ============================================
-// DOWNLOAD CODE
-// ============================================
+function previewCode(id) { const b = document.getElementById(id); if (!b) return; const w = window.open('', '_blank'); w.document.write(b.textContent); w.document.close(); }
 function downloadCode(id) {
-    const block = document.getElementById(id); if (!block) return;
-    const blob = new Blob([block.textContent], { type: 'text/html' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'friendlycode.html';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    const b = document.getElementById(id); if (!b) return;
+    const blob = new Blob([b.textContent], { type: 'text/html' }); const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'friendlycode.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
 }
 
 function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
