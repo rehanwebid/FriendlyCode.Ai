@@ -81,15 +81,10 @@ function setMode(mode, btn) {
     btn.classList.add('active');
     currentMode = mode;
     
-    if (mode === 'ngobrol') {
-        messageInput.placeholder = 'Ngobrol...';
-    } else if (mode === 'ngoding') {
-        messageInput.placeholder = 'Minta kode... (1 token)';
-    } else if (mode === 'vip') {
-        if (userStatus !== 'vip') {
-            alert('Fitur VIP hanya untuk member! Upgrade ke paket VIP ya.');
-            return;
-        }
+    if (mode === 'ngobrol') messageInput.placeholder = 'Ngobrol...';
+    else if (mode === 'ngoding') messageInput.placeholder = 'Minta kode... (1 token)';
+    else if (mode === 'vip') {
+        if (userStatus !== 'vip') { alert('Fitur VIP hanya untuk member!'); return; }
         messageInput.placeholder = 'VIP Mode...';
     }
     checkModeAccess();
@@ -97,16 +92,13 @@ function setMode(mode, btn) {
 
 function checkModeAccess() {
     if (currentMode === 'vip' && userStatus !== 'vip') {
-        messageInput.disabled = true;
-        sendBtn.disabled = true;
+        messageInput.disabled = true; sendBtn.disabled = true;
         messageInput.placeholder = 'Upgrade ke VIP...';
     } else if (currentMode === 'ngoding' && tokenCount <= 0) {
-        messageInput.disabled = true;
-        sendBtn.disabled = true;
+        messageInput.disabled = true; sendBtn.disabled = true;
         messageInput.placeholder = 'Token habis. Beli token untuk lanjut.';
     } else {
-        messageInput.disabled = false;
-        sendBtn.disabled = false;
+        messageInput.disabled = false; sendBtn.disabled = false;
     }
 }
 
@@ -123,20 +115,13 @@ function autoResize(el) {
 // HANDLE ENTER
 // ============================================
 function handleKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        kirimPesan();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); kirimPesan(); }
 }
 
 // ============================================
 // ASK SUGGESTION
 // ============================================
-function askSuggestion(text) {
-    messageInput.value = text;
-    autoResize(messageInput);
-    kirimPesan();
-}
+function askSuggestion(text) { messageInput.value = text; autoResize(messageInput); kirimPesan(); }
 
 // ============================================
 // NEW CHAT
@@ -144,8 +129,7 @@ function askSuggestion(text) {
 function newChat() {
     chatArea.innerHTML = '';
     const welcomeDiv = document.createElement('div');
-    welcomeDiv.className = 'welcome';
-    welcomeDiv.id = 'welcomeScreen';
+    welcomeDiv.className = 'welcome'; welcomeDiv.id = 'welcomeScreen';
     welcomeDiv.innerHTML = `
         <h2>Halo! Ada yang bisa dibantu?</h2>
         <p>Tanya seputar coding, debugging, atau konsep programming.</p>
@@ -157,11 +141,8 @@ function newChat() {
         </div>
     `;
     chatArea.appendChild(welcomeDiv);
-    
-    currentChatId = 'chat_' + Date.now();
-    currentChatTitle = 'New Chat';
-    updateHeaderTitle();
-    messageInput.disabled = false;
+    currentChatId = 'chat_' + Date.now(); currentChatTitle = 'New Chat';
+    updateHeaderTitle(); messageInput.disabled = false;
     messageInput.placeholder = 'Ngobrol...';
     setMode('ngobrol', document.querySelector('.mode-btn[data-mode="ngobrol"]'));
     checkModeAccess();
@@ -171,10 +152,7 @@ function newChat() {
 // LOAD CHAT HISTORY
 // ============================================
 function loadChat(chatId, title) {
-    currentChatId = chatId;
-    currentChatTitle = title;
-    updateHeaderTitle();
-    
+    currentChatId = chatId; currentChatTitle = title; updateHeaderTitle();
     fetch(API_URL + '?action=getHistory&email=' + userData.email)
         .then(res => res.json())
         .then(data => {
@@ -192,22 +170,15 @@ function loadChat(chatId, title) {
 // UPDATE TOKEN
 // ============================================
 function updateToken() {
-    const countEl = document.getElementById('tokenCount');
-    countEl.textContent = tokenCount;
-    if (tokenCount <= 0) {
-        countEl.classList.add('empty');
-        checkModeAccess();
-    } else {
-        countEl.classList.remove('empty');
-    }
+    const countEl = document.getElementById('tokenCount'); countEl.textContent = tokenCount;
+    if (tokenCount <= 0) { countEl.classList.add('empty'); checkModeAccess(); }
+    else { countEl.classList.remove('empty'); }
 }
 
 // ============================================
 // UPDATE HEADER TITLE
 // ============================================
-function updateHeaderTitle() {
-    headerTitle.textContent = currentChatTitle;
-}
+function updateHeaderTitle() { headerTitle.textContent = currentChatTitle; }
 
 // ============================================
 // KIRIM PESAN
@@ -215,71 +186,39 @@ function updateHeaderTitle() {
 async function kirimPesan() {
     const message = messageInput.value.trim();
     if (!message) return;
-
-    if (currentMode === 'ngoding' && tokenCount <= 0) {
-        alert('Token habis! Silakan beli token atau gunakan mode VIP.');
-        return;
-    }
+    if (currentMode === 'ngoding' && tokenCount <= 0) { alert('Token habis!'); return; }
 
     const welcome = document.getElementById('welcomeScreen');
     if (welcome) welcome.style.display = 'none';
 
     if (currentChatTitle === 'New Chat') {
         currentChatTitle = message.substring(0, 40) + (message.length > 40 ? '...' : '');
-        updateHeaderTitle();
-        addHistoryItem(currentChatTitle, currentChatId);
+        updateHeaderTitle(); addHistoryItem(currentChatTitle, currentChatId);
     }
 
     addMessage('user', message);
-    messageInput.value = '';
-    autoResize(messageInput);
-    sendBtn.disabled = true;
+    messageInput.value = ''; autoResize(messageInput); sendBtn.disabled = true;
 
     const loadingMsg = addMessage('ai', '...');
-    
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
-            body: JSON.stringify({
-                action: 'chat',
-                email: userData.email,
-                name: userData.name,
-                message: message,
-                mode: currentMode,
-                chatId: currentChatId
-            })
+            body: JSON.stringify({ action: 'chat', email: userData.email, name: userData.name, message: message, mode: currentMode, chatId: currentChatId })
         });
-        
-        const data = await response.json();
-        loadingMsg.remove();
-        
-        console.log('AI Response:', data); // DEBUG
-        
-        if (data.status === 'success') {
-            addMessage('ai', data.response);
-            tokenCount = data.token;
-            updateToken();
-        } else {
-            addMessage('ai', '⚠️ ' + data.message);
-        }
-    } catch (error) {
-        loadingMsg.remove();
-        console.error('Error:', error);
-        addMessage('ai', '❌ Gagal terhubung ke server.');
-    }
+        const data = await response.json(); loadingMsg.remove();
+        if (data.status === 'success') { addMessage('ai', data.response); tokenCount = data.token; updateToken(); }
+        else { addMessage('ai', '⚠️ ' + data.message); }
+    } catch (error) { loadingMsg.remove(); addMessage('ai', '❌ Gagal terhubung ke server.'); }
 }
 
 // ============================================
 // ADD HISTORY ITEM
 // ============================================
 function addHistoryItem(title, chatId) {
-    const item = document.createElement('div');
-    item.className = 'history-item';
-    item.textContent = title;
+    const item = document.createElement('div'); item.className = 'history-item'; item.textContent = title;
     item.onclick = function() {
         document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-        this.classList.add('active');
-        loadChat(chatId, title);
+        this.classList.add('active'); loadChat(chatId, title);
     };
     historyList.insertBefore(item, historyList.firstChild);
 }
@@ -288,28 +227,15 @@ function addHistoryItem(title, chatId) {
 // ADD MESSAGE
 // ============================================
 function addMessage(type, text) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${type}`;
-    
+    const msgDiv = document.createElement('div'); msgDiv.className = `message ${type}`;
     let avatarHTML = '';
-    if (type === 'ai') {
-        avatarHTML = '<div class="message-avatar">AI</div>';
-    } else {
-        if (userData.photo) {
-            avatarHTML = `<div class="message-avatar"><img src="${userData.photo}" alt="Profile"></div>`;
-        } else {
-            avatarHTML = `<div class="message-avatar">${userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}</div>`;
-        }
+    if (type === 'ai') { avatarHTML = '<div class="message-avatar">AI</div>'; }
+    else {
+        if (userData.photo) { avatarHTML = `<div class="message-avatar"><img src="${userData.photo}" alt="Profile"></div>`; }
+        else { avatarHTML = `<div class="message-avatar">${userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}</div>`; }
     }
-    
-    msgDiv.innerHTML = `
-        ${avatarHTML}
-        <div class="message-content">
-            <div class="message-text">${formatText(text)}</div>
-        </div>
-    `;
-    chatArea.appendChild(msgDiv);
-    chatArea.scrollTop = chatArea.scrollHeight;
+    msgDiv.innerHTML = `${avatarHTML}<div class="message-content"><div class="message-text">${formatText(text)}</div></div>`;
+    chatArea.appendChild(msgDiv); chatArea.scrollTop = chatArea.scrollHeight;
     return msgDiv;
 }
 
@@ -318,42 +244,31 @@ function addMessage(type, text) {
 // ============================================
 function formatText(text) {
     if (text === '...') return '<span style="animation:pulse 1s infinite;">Memikirkan...</span>';
-    
-    // Cek apakah ada code block
     if (text.includes('```')) {
         const parts = text.split('```');
         return parts.map((part, i) => {
             if (i % 2 === 1) {
                 const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
-                // Hapus bahasa pemrograman di baris pertama (html, javascript, dll)
                 let cleanCode = part.trim();
                 const firstLine = cleanCode.split('\n')[0];
-                if (firstLine && !firstLine.includes(' ') && firstLine.length < 20) {
-                    cleanCode = cleanCode.substring(firstLine.length).trim();
-                }
+                if (firstLine && !firstLine.includes(' ') && firstLine.length < 20) { cleanCode = cleanCode.substring(firstLine.length).trim(); }
                 return `
                     <div class="message-code-wrapper">
                         <div class="code-actions">
                             <button class="code-btn" onclick="copyCode('${codeId}')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                Salin
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin
                             </button>
                             <button class="code-btn" onclick="runCode('${codeId}')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                Jalankan
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Jalankan
                             </button>
                         </div>
                         <pre class="message-code" id="${codeId}">${escapeHtml(cleanCode)}</pre>
-                    </div>
-                `;
+                    </div>`;
             }
             return escapeHtml(part).replace(/\n/g, '<br>');
         }).join('');
     }
-    
-    // Cek inline code (`code`)
     text = text.replace(/`([^`]+)`/g, '<code style="background:#010409;padding:2px 6px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:12px;">$1</code>');
-    
     return escapeHtml(text).replace(/\n/g, '<br>');
 }
 
@@ -363,68 +278,50 @@ function formatText(text) {
 function copyCode(codeId) {
     const codeBlock = document.getElementById(codeId);
     if (!codeBlock) return;
-    const code = codeBlock.textContent;
-    
-    navigator.clipboard.writeText(code).then(() => {
+    navigator.clipboard.writeText(codeBlock.textContent).then(() => {
         const wrapper = codeBlock.parentElement;
-        const btns = wrapper.querySelectorAll('.code-btn');
-        const btn = btns[0]; // Tombol Salin
-        
-        btn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            Tersalin!
-        `;
-        btn.style.color = '#10B981';
-        btn.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-        
+        const btn = wrapper.querySelector('.code-btn');
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Tersalin!`;
+        btn.style.color = '#10B981'; btn.style.borderColor = 'rgba(16, 185, 129, 0.3)';
         setTimeout(() => {
-            btn.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                Salin
-            `;
-            btn.style.color = '';
-            btn.style.borderColor = '';
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin`;
+            btn.style.color = ''; btn.style.borderColor = '';
         }, 2000);
-    }).catch(err => {
-        console.error('Copy failed:', err);
-        alert('Gagal menyalin. Coba lagi.');
     });
 }
 
 // ============================================
-// RUN CODE
+// RUN CODE (PREVIEW PANEL)
 // ============================================
 function runCode(codeId) {
     const codeBlock = document.getElementById(codeId);
     if (!codeBlock) return;
     const code = codeBlock.textContent;
-    const newWindow = window.open('', '_blank');
-    newWindow.document.write(code);
-    newWindow.document.close();
+    document.getElementById('previewFrame').srcdoc = code;
+    document.getElementById('previewPanel').classList.add('show');
+    document.getElementById('previewOverlay').classList.add('show');
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+function closePreview() {
+    document.getElementById('previewPanel').classList.remove('show');
+    document.getElementById('previewOverlay').classList.remove('show');
 }
+
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePreview(); });
+
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
 // ============================================
 // LOGOUT
 // ============================================
 function logout() {
-    if (confirm('Yakin ingin keluar?')) {
-        localStorage.removeItem('friendlyUser');
-        window.location.href = 'index.html';
-    }
+    if (confirm('Yakin ingin keluar?')) { localStorage.removeItem('friendlyUser'); window.location.href = 'index.html'; }
 }
 
 // ============================================
 // INIT
 // ============================================
-loadToken();
-loadHistory();
-
+loadToken(); loadHistory();
 const style = document.createElement('style');
 style.textContent = `@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`;
 document.head.appendChild(style);
