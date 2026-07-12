@@ -122,7 +122,9 @@ function addMessage(type, text) {
     let av = ''; if (type==='ai') av = '<div class="message-avatar">AI</div>';
     else { if(userData.photo) av = `<div class="message-avatar"><img src="${userData.photo}" alt="Profile"></div>`; else av = `<div class="message-avatar">${userData.name?userData.name.charAt(0).toUpperCase():'U'}</div>`; }
     div.innerHTML = `${av}<div class="message-content"><div class="message-text">${formatText(text)}</div></div>`;
-    chatArea.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight; return div;
+    chatArea.appendChild(div);
+    setTimeout(() => { chatArea.scrollTop = chatArea.scrollHeight; }, 50);
+    return div;
 }
 
 function formatText(text) {
