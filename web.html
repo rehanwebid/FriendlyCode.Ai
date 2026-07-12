@@ -12,15 +12,14 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="logo.webp" alt="Logo" class="sidebar-logo-img">
+            <img src="./logo.webp" alt="Logo" class="sidebar-logo-img">
             <span class="sidebar-title">FriendlyCode.Ai</span>
         </div>
         <button class="new-chat-btn" onclick="newChat()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Chat
         </button>
-        <div class="sidebar-history" id="historyList">
-        </div>
+        <div class="sidebar-history" id="historyList"></div>
         <div class="sidebar-footer">
             <div class="sidebar-user" onclick="logout()">
                 <img id="userPhoto" class="user-avatar-img" src="" alt="Profile">
@@ -32,8 +31,6 @@
 
     <!-- MAIN -->
     <main class="main" id="mainContent">
-        
-        <!-- HEADER -->
         <header class="header">
             <div class="header-center" id="headerTitle">New Chat</div>
             <div class="header-right">
@@ -43,7 +40,6 @@
             </div>
         </header>
 
-        <!-- CHAT AREA -->
         <div class="chat-area" id="chatArea">
             <div class="welcome" id="welcomeScreen">
                 <h2>Halo! Ada yang bisa dibantu?</h2>
@@ -57,24 +53,19 @@
             </div>
         </div>
 
-        <!-- INPUT AREA -->
         <div class="input-area">
             <div class="input-container">
                 <div class="mode-selector">
                     <button class="mode-btn active" data-mode="ngobrol" onclick="setMode('ngobrol', this)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Ngobrol
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Ngobrol
                     </button>
                     <button class="mode-btn" data-mode="ngoding" onclick="setMode('ngoding', this)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                        Ngoding
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Ngoding
                     </button>
                     <button class="mode-btn" data-mode="vip" onclick="setMode('vip', this)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                        VIP
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> VIP
                     </button>
                 </div>
-                
                 <div class="input-wrapper">
                     <textarea class="input-field" id="messageInput" placeholder="Ngobrol..." rows="1" onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
                     <button class="send-btn" id="sendBtn" onclick="kirimPesan()" disabled>
@@ -84,16 +75,6 @@
             </div>
         </div>
     </main>
-
-    <!-- PREVIEW PANEL (KANAN) -->
-    <div class="preview-overlay" id="previewOverlay" onclick="closePreview()"></div>
-    <div class="preview-panel" id="previewPanel">
-        <div class="preview-header">
-            <span>Preview</span>
-            <button class="preview-close" onclick="closePreview()">✕</button>
-        </div>
-        <iframe class="preview-frame" id="previewFrame"></iframe>
-    </div>
 
     <script src="web.js"></script>
 </body>
