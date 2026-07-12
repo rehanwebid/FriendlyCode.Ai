@@ -15,7 +15,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="logo.webp" alt="Logo" class="sidebar-logo-img">
+            <img src="./logo.webp" alt="Logo" class="sidebar-logo-img">
             <span class="sidebar-title">FriendlyCode.Ai</span>
         </div>
         <button class="new-chat-btn" onclick="newChat(); if(window.innerWidth<=768) closeSidebar();">
@@ -86,16 +86,6 @@
             </div>
         </div>
     </main>
-
-    <!-- POPUP PEMBELIAN -->
-    <div class="purchase-overlay" id="purchaseOverlay" onclick="closePurchasePopup()"></div>
-    <div class="purchase-popup" id="purchasePopup" onclick="event.stopPropagation()">
-        <div class="purchase-popup-header">
-            <span>Upgrade Paket</span>
-            <button class="purchase-close" onclick="closePurchasePopup()">✕</button>
-        </div>
-        <div class="purchase-popup-body" id="purchasePopupBody"></div>
-    </div>
 
     <script src="web.js"></script>
 </body>
