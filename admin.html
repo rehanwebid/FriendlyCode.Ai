@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - FriendlyCode.Ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #05080F;
+            --text: #E2E4E9;
+            --muted: #6B7280;
+            --accent: #3B82F6;
+            --surface: #0A0E17;
+            --border: rgba(255,255,255,0.04);
+            --green: #10B981;
+            --red: #EF4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            width: 100vw;
+            height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: 'Space Grotesk', 'Segoe UI', Arial, sans-serif;
+            color: var(--text);
+        }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(59,130,246,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+            z-index: 0;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 70%);
+        }
+
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(180px);
+            opacity: 0.05;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .orb-1 { width: 800px; height: 800px; background: #3B82F6; top: -400px; right: -300px; }
+        .orb-2 { width: 500px; height: 500px; background: #8B5CF6; bottom: -200px; left: -200px; }
+
+        /* ========== HEADER ========== */
+        .header {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 0;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .header-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        /* ========== CONTAINER ========== */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* ========== STATS ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ========== FORM ========== */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: 'Space Grotesk', 'Segoe UI', Arial, sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.15);
+        }
+
+        /* ========== TOKEN INPUT ========== */
+        .token-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .token-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-family: 'Space Grotesk', 'Segoe UI', Arial, sans-serif;
+        }
+
+        .token-btn:hover {
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .token-value {
+            width: 60px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            user-select: none;
+        }
+
+        /* ========== DATE INPUT ========== */
+        .date-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-separator {
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        /* ========== SUBMIT ========== */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--text);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Space Grotesk', 'Segoe UI', Arial, sans-serif;
+            letter-spacing: -0.3px;
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.08);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ========== NOTIF ========== */
+        .notif {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .notif.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--green);
+        }
+
+        .notif.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--red);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 600px) {
+            .header { padding: 12px 16px; }
+            .header-title { font-size: 14px; }
+            .container { padding: 20px 16px; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .stat-card { padding: 14px 10px; }
+            .stat-value { font-size: 22px; }
+            .form-card { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <img src="logo.webp" alt="Logo" class="header-logo">
+            <span class="header-title">FriendlyCode.Ai</span>
+        </div>
+        <div class="header-badge">
+            <span class="badge-dot"></span>
+            Admin Panel
+        </div>
+    </div>
+
+    <!-- CONTAINER -->
+    <div class="container">
+        
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statUsers">0</div>
+                <div class="stat-label">Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statVIP">0</div>
+                <div class="stat-label">VIP</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statTokens">0</div>
+                <div class="stat-label">Tokens</div>
+            </div>
+        </div>
+
+        <!-- NOTIF -->
+        <div class="notif" id="notif"></div>
+
+        <!-- FORM -->
+        <div class="form-card">
+            <div class="form-title">Update User</div>
+            
+            <div class="form-group">
+                <label class="form-label">Masukan Gmail</label>
+                <input type="email" id="emailInput" class="form-input" placeholder="example@gmail.com">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Masukan jumlah token</label>
+                <div class="token-input-group">
+                    <button class="token-btn" onclick="changeToken(-1)">−</button>
+                    <span class="token-value" id="tokenValue">0</span>
+                    <button class="token-btn" onclick="changeToken(1)">+</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Masukan masa VIP</label>
+                <div class="date-input-group">
+                    <input type="date" id="vipStart" class="form-input">
+                    <span class="date-separator">—</span>
+                    <input type="date" id="vipEnd" class="form-input">
+                </div>
+            </div>
+
+            <button class="submit-btn" onclick="submitForm()">Submit</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================
+        // ⚙️ CONFIG
+        // ============================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwNJ8E52DLKj10e0kaUDcVASaw2V4uyxsoX9bmfP-ts7jC0lYOlKCyHaBk6SXX537Ukdw/exec';
+        let token = 0;
+
+        // ============================================
+        // LOAD STATS
+        // ============================================
+        async function loadStats() {
+            try {
+                const response = await fetch(API_URL + '?action=getStats');
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById('statUsers').textContent = data.totalUsers || 0;
+                    document.getElementById('statVIP').textContent = data.vipUsers || 0;
+                    document.getElementById('statTokens').textContent = data.totalTokens || 0;
+                }
+            } catch (error) {
+                console.error('Gagal load stats:', error);
+            }
+        }
+
+        // ============================================
+        // TOKEN +/-
+        // ============================================
+        function changeToken(delta) {
+            token = Math.max(0, token + delta);
+            document.getElementById('tokenValue').textContent = token;
+        }
+
+        // ============================================
+        // SUBMIT
+        // ============================================
+        async function submitForm() {
+            const email = document.getElementById('emailInput').value.trim();
+            const vipStart = document.getElementById('vipStart').value;
+            const vipEnd = document.getElementById('vipEnd').value;
+            const notif = document.getElementById('notif');
+            const btn = document.querySelector('.submit-btn');
+            
+            if (!email) {
+                showNotif('Masukan email dulu!', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Mengirim...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'adminUpdate',
+                        email: email,
+                        token: token,
+                        vipStart: vipStart,
+                        vipEnd: vipEnd
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showNotif(data.message || '✅ Berhasil!', 'success');
+                    loadStats();
+                } else {
+                    showNotif(data.message || '❌ Gagal!', 'error');
+                }
+            } catch (error) {
+                showNotif('Gagal terhubung ke server!', 'error');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Submit';
+        }
+
+        function showNotif(msg, type) {
+            const notif = document.getElementById('notif');
+            notif.textContent = msg;
+            notif.className = 'notif ' + type;
+            setTimeout(() => { notif.className = 'notif'; }, 4000);
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        loadStats();
+    </script>
+
+</body>
+</html>
